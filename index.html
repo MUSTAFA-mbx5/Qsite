@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
-    <title>نظام قساطي المتكامل - محل وليد</title>
+    <title>نظام قساطي  v1.00 - محل وليد</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/jsbarcode@3.11.5/dist/JsBarcode.all.min.js"></script>
@@ -160,10 +160,12 @@
                 <div>
                     <label class="block text-xs font-bold text-gray-600 mb-1">اسم الزبون الثلاثي *</label>
                     <input type="text" id="phoneName" placeholder="الاسم الكامل" class="w-full border rounded-xl p-2.5">
+                    <p id="phonePreviousDebt" class="text-xs font-bold text-amber-700"></p>
                 </div>
                 <div>
-                    <label class="block text-xs font-bold text-gray-600 mb-1">رقم الهاتف *</label>
-                    <input type="tel" id="phoneCustomerPhone" placeholder="07xxxxxxxx" class="w-full border rounded-xl p-2.5">
+                    <label class="block text-xs font-bold text-gray-600 mb-1">رقم الهاتف (اختياري)</label>
+                    <input type="tel" id="phoneCustomerPhone" placeholder="07xxxxxxxx - اختياري" class="w-full border rounded-xl p-2.5">
+                <div><label class="block text-xs font-bold text-gray-600 mb-1">تاريخ تسجيل الدين *</label><input type="date" id="phoneDebtDate" class="w-full border rounded-xl p-2.5"></div>
                 </div>
                 <div>
                     <label class="block text-xs font-bold text-gray-600 mb-1">نوع الهاتف / الجهاز *</label>
@@ -175,7 +177,9 @@
                 </div>
                 <div>
                     <label class="block text-xs font-bold text-gray-600 mb-1">القسط الشهري (د.ع) *</label>
-                    <input type="text" id="phoneMonthly" placeholder="المبلغ الشهري" class="w-full border rounded-xl p-2.5 price-input">
+                    <input type="text" id="phoneMonthly" placeholder="سعر التسديد كل شهر" class="w-full border rounded-xl p-2.5 price-input">
+                    <input type="text" id="phoneDownPayment" placeholder="المقدمة (اختياري)" class="w-full border rounded-xl p-2.5 price-input">
+                    <input type="number" id="phoneInstallments" placeholder="عدد الدفعات المطلوبة" min="1" class="w-full border rounded-xl p-2.5">
                 </div>
             </div>
             <div class="flex flex-wrap gap-3 mt-5 border-t pt-4">
@@ -189,6 +193,7 @@
             <div class="mb-4 relative">
                 <i class="fas fa-search absolute right-4 top-3.5 text-gray-400"></i>
                 <input type="text" id="searchPhonesInput" placeholder="بحث باسم الزبون، رقم الهاتف، التسلسل، أو الجهاز..." class="w-full pr-11 pl-4 py-3 border rounded-xl focus:outline-none">
+                <select id="phoneStatusFilter" class="w-full mt-2 border rounded-xl p-2 font-bold"><option value="all">فلترة: الكل</option><option value="paid">مسدد بالكامل</option><option value="unpaid">غير مسدد</option><option value="late">متأخر</option></select>
             </div>
             <div id="phonesDebtorsList" class="space-y-3 max-h-[500px] overflow-y-auto"></div>
         </div>
@@ -206,10 +211,12 @@
                 <div>
                     <label class="block text-xs font-bold text-gray-600 mb-1">اسم الزبون الثلاثي *</label>
                     <input type="text" id="deviceName" placeholder="الاسم الكامل" class="w-full border rounded-xl p-2.5">
+                    <p id="devicePreviousDebt" class="text-xs font-bold text-amber-700"></p>
                 </div>
                 <div>
-                    <label class="block text-xs font-bold text-gray-600 mb-1">رقم الهاتف *</label>
-                    <input type="tel" id="deviceCustomerPhone" placeholder="07xxxxxxxx" class="w-full border rounded-xl p-2.5">
+                    <label class="block text-xs font-bold text-gray-600 mb-1">رقم الهاتف (اختياري)</label>
+                    <input type="tel" id="deviceCustomerPhone" placeholder="07xxxxxxxx - اختياري" class="w-full border rounded-xl p-2.5">
+                <div><label class="block text-xs font-bold text-gray-600 mb-1">تاريخ تسجيل الدين *</label><input type="date" id="deviceDebtDate" class="w-full border rounded-xl p-2.5"></div>
                 </div>
                 <div>
                     <label class="block text-xs font-bold text-gray-600 mb-1">نوع الجهاز الكهربائي *</label>
@@ -221,7 +228,9 @@
                 </div>
                 <div>
                     <label class="block text-xs font-bold text-gray-600 mb-1">القسط الشهري (د.ع) *</label>
-                    <input type="text" id="deviceMonthly" placeholder="المبلغ الشهري" class="w-full border rounded-xl p-2.5 price-input">
+                    <input type="text" id="deviceMonthly" placeholder="سعر التسديد كل شهر" class="w-full border rounded-xl p-2.5 price-input">
+                    <input type="text" id="deviceDownPayment" placeholder="المقدمة (اختياري)" class="w-full border rounded-xl p-2.5 price-input">
+                    <input type="number" id="deviceInstallments" placeholder="عدد الدفعات المطلوبة" min="1" class="w-full border rounded-xl p-2.5">
                 </div>
             </div>
             <div class="flex flex-wrap gap-3 mt-5 border-t pt-4">
@@ -235,6 +244,7 @@
             <div class="mb-4 relative">
                 <i class="fas fa-search absolute right-4 top-3.5 text-gray-400"></i>
                 <input type="text" id="searchDevicesInput" placeholder="بحث باسم الزبون، رقم الهاتف، التسلسل، أو الجهاز..." class="w-full pr-11 pl-4 py-3 border rounded-xl focus:outline-none">
+                <select id="deviceStatusFilter" class="w-full mt-2 border rounded-xl p-2 font-bold"><option value="all">فلترة: الكل</option><option value="paid">مسدد بالكامل</option><option value="unpaid">غير مسدد</option><option value="late">متأخر</option></select>
             </div>
             <div id="devicesDebtorsList" class="space-y-3 max-h-[500px] overflow-y-auto"></div>
         </div>
@@ -622,6 +632,24 @@
     </div>
 </div>
 
+<!-- نافذة تعديل بيانات الزبون -->
+<div id="editCustomerModal" class="loading-overlay hidden">
+  <div class="bg-white text-gray-800 rounded-2xl p-6 max-w-lg w-full text-right">
+    <h3 class="text-xl font-bold border-b pb-3 mb-4">تعديل بيانات الزبون</h3>
+    <input type="hidden" id="editDebtId">
+    <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
+      <div><label class="block text-xs font-bold mb-1">رقم الهاتف (اختياري)</label><input id="editCustomerPhone" type="tel" class="w-full border rounded-xl p-2.5"></div>
+      <div><label class="block text-xs font-bold mb-1">تاريخ التسجيل</label><input id="editDebtDate" type="date" class="w-full border rounded-xl p-2.5"></div>
+      <div><label class="block text-xs font-bold mb-1">المبلغ الكلي</label><input id="editTotalAmount" type="text" class="w-full border rounded-xl p-2.5"></div>
+      <div><label class="block text-xs font-bold mb-1">القسط الشهري</label><input id="editMonthlyAmount" type="text" class="w-full border rounded-xl p-2.5"></div>
+      <div><label class="block text-xs font-bold mb-1">المتبقي</label><input id="editRemainingAmount" type="text" class="w-full border rounded-xl p-2.5"></div>
+      <div><label class="block text-xs font-bold mb-1">المقدمة</label><input id="editDownPayment" type="text" class="w-full border rounded-xl p-2.5"></div>
+      <div><label class="block text-xs font-bold mb-1">عدد الدفعات</label><input id="editInstallments" type="number" min="1" class="w-full border rounded-xl p-2.5"></div>
+    </div>
+    <div class="flex justify-end gap-2 mt-5"><button onclick="document.getElementById('editCustomerModal').classList.add('hidden')" class="btn-secondary px-4 py-2 rounded-xl">إلغاء</button><button id="saveCustomerEditBtn" class="btn-success px-4 py-2 rounded-xl">حفظ التعديل</button></div>
+  </div>
+</div>
+
 <!-- منطقة الطباعة العائمة -->
 <div id="printArea" class="hidden"></div>
 
@@ -675,6 +703,7 @@
         botSettings = JSON.parse(localStorage.getItem("walid_bot_settings")) || { token: "", chatId: "", extraChatIds: "" };
         appLogoUrl = localStorage.getItem("walid_app_logo") || "https://via.placeholder.com/80?text=Qsite";
         receiptDesign = JSON.parse(localStorage.getItem("walid_receipt_design")) || getDefaultReceiptDesign();
+        [...phonesDebts, ...devicesDebts].forEach(d => { if (!d.customerKey) d.customerKey = d.phone ? 'phone:' + d.phone : 'record:' + d.name + '|' + d.seq; });
 
         // ترحيل الديون القديمة إلى سجل المعاملات مرة واحدة بدون تكرار.
         [...phonesDebts, ...devicesDebts].forEach(debt => {
@@ -915,6 +944,22 @@
     // -------------------------------------------------------------------------
     // 7. قوائم الزبائن (تقسيط) والإجراءات المباشرة
     // -------------------------------------------------------------------------
+    function monthKey(date) { const d = new Date(date || Date.now()); return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}`; }
+    function addMonthsDate(date, months) { const d = new Date(date || Date.now()); d.setMonth(d.getMonth()+months); return d; }
+    function missedInstallments(debt) {
+        if (!debt || Number(debt.remaining||0) <= 0) return 0;
+        const start = new Date(debt.createdAt || Date.now());
+        const due = addMonthsDate(start, 1);
+        const now = new Date();
+        if (now < due) return 0;
+        const payments = paymentHistory.filter(h => h.customerPhone === debt.phone && h.device === debt.deviceType && h.type === 'تسديد');
+        const paidMonths = new Set(payments.map(h => monthKey(h.date)));
+        let missed = 0;
+        const cursor = new Date(due);
+        while (cursor <= now) { if (!paidMonths.has(monthKey(cursor))) missed++; cursor.setMonth(cursor.getMonth()+1); }
+        return missed;
+    }
+
     function renderCustomersModule(sectionType) {
         let isPhone = sectionType === 'phones';
         let listContainer = document.getElementById(isPhone ? "phonesDebtorsList" : "devicesDebtorsList");
@@ -925,17 +970,22 @@
 
         let grouped = {};
         debts.forEach(d => {
-            if(!grouped[d.phone]) {
-                grouped[d.phone] = { name: d.name, phone: d.phone, seq: d.seq, items: [] };
+            d.customerKey = d.customerKey || (d.phone ? 'phone:' + d.phone : 'record:' + d.name + '|' + d.seq);
+            if(!grouped[d.customerKey]) {
+                grouped[d.customerKey] = { key: d.customerKey, name: d.name, phone: d.phone || '', seq: d.seq, items: [] };
             }
-            grouped[d.phone].items.push(d);
+            grouped[d.customerKey].items.push(d);
         });
 
+        const statusFilter = document.getElementById(isPhone ? 'phoneStatusFilter' : 'deviceStatusFilter')?.value || 'all';
         let filtered = Object.values(grouped).filter(c => {
-            return c.name.toLowerCase().includes(searchVal) ||
+            const rem = c.items.reduce((sum, i) => sum + Number(i.remaining || 0), 0);
+            const late = c.items.some(i => Number(i.remaining||0) > 0 && missedInstallments(i) > 0);
+            const statusOk = statusFilter === 'all' || (statusFilter === 'paid' && rem <= 0) || (statusFilter === 'unpaid' && rem > 0) || (statusFilter === 'late' && late);
+            return statusOk && (c.name.toLowerCase().includes(searchVal) ||
                    c.phone.toLowerCase().includes(searchVal) ||
                    c.seq.toLowerCase().includes(searchVal) ||
-                   c.items.some(i => i.deviceType.toLowerCase().includes(searchVal));
+                   c.items.some(i => i.deviceType.toLowerCase().includes(searchVal)));
         });
 
         if(filtered.length === 0) {
@@ -955,7 +1005,7 @@
                         <div class="flex items-center gap-2">
                             <span class="bg-blue-600 text-white font-mono text-xs px-2 py-0.5 rounded font-bold">${cust.seq || '---'}</span>
                             <strong class="text-base text-gray-900">${cust.name}</strong>
-                            <span class="text-xs text-gray-500 font-mono">📞 ${cust.phone}</span>
+                            <span class="text-xs text-gray-500 font-mono">${cust.phone ? '📞 ' + cust.phone : 'بدون هاتف'}</span>
                         </div>
                         <p class="text-xs text-gray-600 mt-1">الأجهزة: ${devicesText}</p>
                     </div>
@@ -967,9 +1017,9 @@
 
                 <div class="flex flex-wrap gap-2 border-t pt-2">
                     <button onclick="sendWhatsAppReminder('${cust.name}', '${cust.phone}', ${totalRem})" class="btn-whatsapp card-btn bg-green-600 text-white border-green-700"><i class="fab fa-whatsapp"></i> تذكير بالدين</button>
-                    <button onclick="openPaymentModal('${cust.phone}')" class="btn-pay card-btn bg-blue-600 text-white border-blue-700"><i class="fas fa-hand-holding-usd"></i> تسديد</button>
-                    <button onclick="openAddDeviceToCustModal('${cust.phone}')" class="btn-purple card-btn text-white"><i class="fas fa-plus-circle"></i> إضافة جهاز جديد</button>
-                    <button onclick="openCustomerDetailsModal('${cust.phone}')" class="btn-details card-btn bg-slate-100 border-slate-300 text-slate-800"><i class="fas fa-info-circle"></i> التفاصيل</button>
+                    <button onclick="openPaymentModal('${cust.key}')" class="btn-pay card-btn bg-blue-600 text-white border-blue-700"><i class="fas fa-hand-holding-usd"></i> تسديد</button>
+                    <button onclick="openAddDeviceToCustModal('${cust.key}')" class="btn-purple card-btn text-white"><i class="fas fa-plus-circle"></i> إضافة جهاز جديد</button>
+                    <button onclick="openCustomerDetailsModal('${cust.key}')" class="btn-details card-btn bg-slate-100 border-slate-300 text-slate-800"><i class="fas fa-info-circle"></i> التفاصيل</button>
                 </div>
             `;
             listContainer.appendChild(card);
@@ -977,6 +1027,7 @@
     }
 
     function sendWhatsAppReminder(name, phone, totalRem) {
+        if (!phone) { alert('لا يوجد رقم هاتف مسجل لهذا الزبون.'); return; }
         let cleanPhone = phone.replace(/[^0-9]/g, '');
         if(cleanPhone.startsWith("07")) cleanPhone = "964" + cleanPhone.substring(1);
 
@@ -1004,7 +1055,7 @@
     function openPaymentModal(phone) {
         currentPayCustomerPhone = phone;
         let all = [...phonesDebts, ...devicesDebts];
-        let custItems = all.filter(d => d.phone === phone && d.remaining > 0);
+        let custItems = all.filter(d => (d.customerKey || (d.phone ? 'phone:'+d.phone : 'record:'+d.name+'|'+d.seq)) === phone && d.remaining > 0);
 
         if(custItems.length === 0) { alert("هذا الزبون ليس عليه أي ديون متأخرة!"); return; }
 
@@ -1030,7 +1081,7 @@
         if(isNaN(amt) || amt <= 0) return;
 
         let all = [...phonesDebts, ...devicesDebts];
-        let custItems = all.filter(d => d.phone === currentPayCustomerPhone && d.remaining > 0);
+        let custItems = all.filter(d => (d.customerKey || (d.phone ? 'phone:'+d.phone : 'record:'+d.name+'|'+d.seq)) === currentPayCustomerPhone && d.remaining > 0);
         let selectedDevId = document.getElementById("payDeviceSelect").value;
 
         if(selectedDevId === 'all') {
@@ -1057,7 +1108,7 @@
         
         let newTotalRem = custItems.reduce((s,i)=>s+i.remaining,0);
         renderAllModules();
-        printA5ReceiptDirect(custItems[0].name, currentPayCustomerPhone, amt, newTotalRem, custItems[0].seq, custItems[0].deviceType, 'تسديد', new Date());
+        printA5ReceiptDirect(custItems[0].name, custItems[0].phone || '', amt, newTotalRem, custItems[0].seq, custItems[0].deviceType, 'تسديد', new Date());
     };
 
     function getReceiptPaperClass() {
@@ -1070,11 +1121,15 @@
         printArea.className = "receipt-template " + (localStorage.getItem('walid_receipt_template') || 'modern') + " " + getReceiptPaperClass();
         const dateText = formatDate(transactionDateValue);
         const safe = v => String(v ?? '').replace(/[<>&"]/g, c => ({'<':'&lt;','>':'&gt;','&':'&amp;','"':'&quot;'}[c]));
+        const matchedDebt = [...phonesDebts, ...devicesDebts].find(d => d.name === name && d.deviceType === device && (d.phone || '') === (phone || ''));
+        const downText = matchedDebt ? Number(matchedDebt.downPayment || 0).toLocaleString() : '0';
+        const monthlyText = matchedDebt ? Number(matchedDebt.monthlyPayment || 0).toLocaleString() : '0';
+        const installmentsText = matchedDebt ? (matchedDebt.installmentsRequired || '—') : '—';
         const code = `REC-${Date.now()}`;
         printArea.innerHTML = `
             <div class="receipt-head"><div><h1 style="font-size:20px;font-weight:900;margin:0">محل وليد</h1><p style="margin:4px 0;font-size:11px">وصل معاملة رسمي</p></div><img class="receipt-logo" src="${appLogoUrl}" alt="اللوغو"></div>
             <div class="receipt-columns"><div><div class="receipt-row"><b>اسم الزبون</b><span>${safe(name)}</span></div><div class="receipt-row"><b>رقم الهاتف</b><span>${safe(phone)}</span></div><div class="receipt-row"><b>التسلسل</b><span>${safe(seq || '---')}</span></div><div class="receipt-row"><b>المادة</b><span>${safe(device)}</span></div></div><div><div class="receipt-row"><b>نوع المعاملة</b><span>${safe(transactionType)}</span></div><div class="receipt-row"><b>التاريخ</b><span>${dateText}</span></div><div class="receipt-row"><b>المبلغ المستلم</b><strong>${Number(paid||0).toLocaleString()} د.ع</strong></div><div class="receipt-row"><b>المبلغ المتبقي</b><strong>${Number(rem||0).toLocaleString()} د.ع</strong></div></div></div>
-            <div class="receipt-box"><div class="receipt-row"><b>الحالة</b><span>${Number(rem||0) > 0 ? 'متبقي من الدين' : 'تم التسديد بالكامل'}</span></div><div class="receipt-row"><b>تفاصيل المبلغ</b><span>${Number(paid||0).toLocaleString()} د.ع بتاريخ ${dateText}</span></div></div>
+            <div class="receipt-box"><div class="receipt-row"><b>سعر التقسيط</b><span>${matchedDebt ? Number(matchedDebt.totalAmount||0).toLocaleString() : Number(rem||0).toLocaleString()} د.ع</span></div><div class="receipt-row"><b>المقدمة</b><span>${downText} د.ع</span></div><div class="receipt-row"><b>القسط الشهري</b><span>${monthlyText} د.ع</span></div><div class="receipt-row"><b>عدد الدفعات</b><span>${installmentsText}</span></div><div class="receipt-row"><b>الحالة</b><span>${Number(rem||0) > 0 ? 'متبقي من الدين' : 'تم التسديد بالكامل'}</span></div><div class="receipt-row"><b>تفاصيل المبلغ</b><span>${Number(paid||0).toLocaleString()} د.ع بتاريخ ${dateText}</span></div></div>
             <div class="receipt-barcode"><div id="receiptSquareBarcode" style="display:inline-block"></div><div style="font-size:10px;margin-top:3px">${code}</div></div><p style="text-align:center;font-size:11px;margin-top:20px">شكراً لتعاملكم معنا</p>`;
         setTimeout(() => {
             new QRCode(document.getElementById('receiptSquareBarcode'), { text: code, width: 120, height: 120, correctLevel: QRCode.CorrectLevel.M });
@@ -1083,43 +1138,89 @@
         }, 350);
     }
 
-    function printCustomerTransactionHistory(phone) {
+    function printCustomerTransactionHistory(customerKey) {
         const all = [...phonesDebts, ...devicesDebts];
-        const customer = all.find(d => d.phone === phone);
-        const rows = paymentHistory.filter(h => h.customerPhone === phone).sort((a,b) => transactionDate(a.date)-transactionDate(b.date));
+        const customer = all.find(d => (d.customerKey || (d.phone ? 'phone:'+d.phone : 'record:'+d.name+'|'+d.seq)) === customerKey);
         if (!customer) return;
+        const rows = paymentHistory.filter(h => h.customerPhone === (customer.phone || '') && h.device === customer.deviceType).sort((a,b) => transactionDate(a.date)-transactionDate(b.date));
         const printArea = document.getElementById('printArea');
         printArea.className = 'receipt-template modern ' + getReceiptPaperClass();
-        printArea.innerHTML = `<div class="receipt-head"><div><h1 style="font-size:20px;font-weight:900;margin:0">سجل تفاصيل الزبون</h1><p>${customer.name} - ${customer.phone}</p></div><img class="receipt-logo" src="${appLogoUrl}"></div><div class="receipt-box"><div class="receipt-row"><b>التسلسل</b><span>${customer.seq || '---'}</span></div><div class="receipt-row"><b>الأجهزة</b><span>${all.filter(d=>d.phone===phone).map(d=>d.deviceType).join('، ')}</span></div></div><table style="width:100%;border-collapse:collapse;margin-top:14px;font-size:11px"><thead><tr style="background:#e5e7eb"><th style="border:1px solid #222;padding:6px">نوع المعاملة</th><th style="border:1px solid #222;padding:6px">الحالة</th><th style="border:1px solid #222;padding:6px">المبلغ</th><th style="border:1px solid #222;padding:6px">المتبقي</th><th style="border:1px solid #222;padding:6px">التاريخ</th></tr></thead><tbody>${rows.map(h=>`<tr><td style="border:1px solid #222;padding:6px">${h.type || (h.amount ? 'تسديد' : 'دين')}</td><td style="border:1px solid #222;padding:6px">${Number(h.remaining||0)>0?'باقي من الدين':'تم الدفع'}</td><td style="border:1px solid #222;padding:6px">${Number(h.amount||0).toLocaleString()} د.ع</td><td style="border:1px solid #222;padding:6px">${Number(h.remaining||0).toLocaleString()} د.ع</td><td style="border:1px solid #222;padding:6px">${formatDate(h.date)}</td></tr>`).join('')}</tbody></table><p style="text-align:center;margin-top:20px;font-size:11px">تمت الطباعة بتاريخ ${formatDate(new Date())}</p>`;
+        printArea.innerHTML = `<div class="receipt-head"><div><h1 style="font-size:20px;font-weight:900;margin:0">سجل تفاصيل الزبون</h1><p>${customer.name} - ${customer.phone || 'بدون هاتف'}</p></div><img class="receipt-logo" src="${appLogoUrl}"></div><div class="receipt-box"><div class="receipt-row"><b>التسلسل</b><span>${customer.seq || '---'}</span></div><div class="receipt-row"><b>الأجهزة</b><span>${all.filter(d => (d.customerKey || (d.phone ? 'phone:'+d.phone : 'record:'+d.name+'|'+d.seq)) === customerKey).map(d=>d.deviceType).join('، ')}</span></div></div><table style="width:100%;border-collapse:collapse;margin-top:14px;font-size:11px"><thead><tr style="background:#e5e7eb"><th style="border:1px solid #222;padding:6px">نوع المعاملة</th><th style="border:1px solid #222;padding:6px">الحالة</th><th style="border:1px solid #222;padding:6px">المبلغ</th><th style="border:1px solid #222;padding:6px">المتبقي</th><th style="border:1px solid #222;padding:6px">التاريخ</th></tr></thead><tbody>${rows.map(h=>`<tr><td style="border:1px solid #222;padding:6px">${h.type || (h.amount ? 'تسديد' : 'دين')}</td><td style="border:1px solid #222;padding:6px">${Number(h.remaining||0)>0?'باقي من الدين':'تم الدفع'}</td><td style="border:1px solid #222;padding:6px">${Number(h.amount||0).toLocaleString()} د.ع</td><td style="border:1px solid #222;padding:6px">${Number(h.remaining||0).toLocaleString()} د.ع</td><td style="border:1px solid #222;padding:6px">${formatDate(h.date)}</td></tr>`).join('')}</tbody></table><p style="text-align:center;margin-top:20px;font-size:11px">تمت الطباعة بتاريخ ${formatDate(new Date())}</p>`;
         setTimeout(() => { window.print(); setTimeout(() => { printArea.innerHTML=''; printArea.className='hidden'; }, 800); }, 250);
+    }
+
+    function saveCustomerDetailsEdits(customerKey, modal) {
+        const all = [...phonesDebts, ...devicesDebts];
+        const items = all.filter(d => (d.customerKey || (d.phone ? 'phone:'+d.phone : 'record:'+d.name+'|'+d.seq)) === customerKey);
+        if (!items.length) return;
+        const oldInfo = items.map(d => ({phone:d.phone || '', device:d.deviceType, name:d.name}));
+        const seq = modal.querySelector('#detailSeq').value.trim();
+        const name = modal.querySelector('#detailName').value.trim();
+        const phone = modal.querySelector('#detailPhone').value.trim();
+        if (!seq || !name) { alert('التسلسل والاسم مطلوبان'); return; }
+        for (const item of items) {
+            const box = modal.querySelector(`[data-detail-item="${item.id}"]`);
+            if (!box) continue;
+            const number = key => Number(box.querySelector(`[data-item-field="${key}"]`).value.replace(/,/g,'')) || 0;
+            if (number('remaining') > number('totalAmount') || number('downPayment') > number('totalAmount')) { alert('تحقق من المبالغ: المتبقي والمقدمة لا يمكن أن يتجاوزا سعر التقسيط.'); return; }
+        }
+        items.forEach((item, index) => {
+            item.seq = seq; item.name = name; item.phone = phone;
+            const box = modal.querySelector(`[data-detail-item="${item.id}"]`);
+            if (box) {
+                const val = key => box.querySelector(`[data-item-field="${key}"]`).value;
+                item.deviceType = val('deviceType').trim();
+                item.totalAmount = Number(val('totalAmount').replace(/,/g,'')) || 0;
+                item.downPayment = Number(val('downPayment').replace(/,/g,'')) || 0;
+                item.monthlyPayment = Number(val('monthlyPayment').replace(/,/g,'')) || 0;
+                item.installmentsRequired = Number(val('installmentsRequired')) || 0;
+                item.remaining = Number(val('remaining').replace(/,/g,'')) || 0;
+            }
+            item.customerKey = phone ? 'phone:'+phone : 'record:'+name+'|'+seq;
+        });
+        const oldSet = new Set(oldInfo.map(x => x.phone+'|'+x.device));
+        paymentHistory.forEach(h => { if (oldSet.has((h.customerPhone||'')+'|'+h.device)) { h.customerPhone=phone; h.customerName=name; h.seq=seq; } });
+        modal.querySelectorAll('[data-history-id]').forEach(row => {
+            const h = paymentHistory.find(x => String(x.id) === String(row.dataset.historyId));
+            if (!h) return;
+            h.type = row.querySelector('[data-history-field="type"]').value;
+            h.amount = Number(row.querySelector('[data-history-field="amount"]').value.replace(/,/g,'')) || 0;
+            h.remaining = Number(row.querySelector('[data-history-field="remaining"]').value.replace(/,/g,'')) || 0;
+            const d = row.querySelector('[data-history-field="date"]').value;
+            if (d) h.date = new Date(d+'T00:00:00').toISOString();
+            h.monthYear = monthKey(h.date);
+        });
+        saveAllData(); renderAllModules(); modal.remove(); alert('تم حفظ تعديل الاسم والتسلسل والهاتف والأجهزة والمبالغ وجدول الدفعات بنجاح.');
     }
 
     function openCustomerDetailsModal(phone) {
         let all = [...phonesDebts, ...devicesDebts];
-        let custItems = all.filter(d => d.phone === phone);
+        let custItems = all.filter(d => (d.customerKey || (d.phone ? 'phone:'+d.phone : 'record:'+d.name+'|'+d.seq)) === phone);
         if(custItems.length === 0) return;
 
-        let custHistory = paymentHistory.filter(h => h.customerPhone === phone);
+        let custHistory = paymentHistory.filter(h => custItems.some(item => h.customerPhone === (item.phone || '') && (!h.device || h.device === item.deviceType)));
 
         let itemsHtml = custItems.map(item => `
-            <div class="border p-3 rounded-xl flex justify-between items-center mb-2">
-                <div>
-                    <strong class="text-sm block">${item.deviceType}</strong>
-                    <span class="text-xs text-gray-500">سعر التقسيط: ${item.totalAmount.toLocaleString()} د.ع</span>
+            <div class="border p-3 rounded-xl mb-2 bg-slate-50" data-detail-item="${item.id}">
+                <div class="grid grid-cols-2 gap-2 text-xs">
+                    <label class="font-bold">اسم الجهاز<input data-item-field="deviceType" value="${String(item.deviceType||'').replace(/"/g,'&quot;')}" class="w-full border rounded p-1.5 mt-1"></label>
+                    <label class="font-bold">سعر التقسيط<input data-item-field="totalAmount" value="${item.totalAmount||0}" class="w-full border rounded p-1.5 mt-1"></label>
+                    <label class="font-bold">المقدمة<input data-item-field="downPayment" value="${item.downPayment||0}" class="w-full border rounded p-1.5 mt-1"></label>
+                    <label class="font-bold">القسط الشهري<input data-item-field="monthlyPayment" value="${item.monthlyPayment||0}" class="w-full border rounded p-1.5 mt-1"></label>
+                    <label class="font-bold">عدد الدفعات<input data-item-field="installmentsRequired" type="number" value="${item.installmentsRequired||0}" class="w-full border rounded p-1.5 mt-1"></label>
+                    <label class="font-bold">المتبقي<input data-item-field="remaining" value="${item.remaining||0}" class="w-full border rounded p-1.5 mt-1"></label>
                 </div>
-                ${item.remaining <= 0 ? 
-                    `<div class="bg-green-500 text-white text-xs font-bold px-3 py-1.5 rounded-lg">🟩 مسدد بالكامل</div>` : 
-                    `<div class="bg-red-500 text-white text-xs font-bold px-3 py-1.5 rounded-lg">🟥 دين متبقي: ${item.remaining.toLocaleString()} د.ع</div>`}
+                <span class="text-xs ${missedInstallments(item)>0?'text-yellow-700 bg-yellow-100 px-2 py-1 rounded':''}">${missedInstallments(item)>0 ? 'أشهر غير مسددة: '+missedInstallments(item) : 'لا توجد أشهر فائتة'}</span>
             </div>
         `).join('');
 
         let historyHtml = custHistory.sort((a,b) => transactionDate(a.date) - transactionDate(b.date)).map(h => `
-            <tr class="border-b text-xs">
-                <td class="p-2 font-bold">${h.type || (Number(h.remaining||0) > 0 ? 'دين' : 'تسديد')}</td>
-                <td class="p-2">${Number(h.remaining||0) > 0 ? 'باقي من الدين' : 'تم الدفع'}</td>
-                <td class="p-2 font-bold text-green-600">${Number(h.amount||0).toLocaleString()} د.ع</td>
-                <td class="p-2 font-bold text-red-600">${Number(h.remaining||0).toLocaleString()} د.ع</td>
-                <td class="p-2 font-mono">${formatDate(h.date)}</td>
+            <tr class="border-b text-xs" data-history-id="${h.id}">
+                <td class="p-1"><select data-history-field="type" class="border rounded p-1"><option ${h.type==='تسديد'?'selected':''}>تسديد</option><option ${h.type==='دين'?'selected':''}>دين</option><option ${h.type==='مقدمة'?'selected':''}>مقدمة</option><option ${h.type==='تعديل'?'selected':''}>تعديل</option></select></td>
+                <td class="p-1"><span class="text-gray-600">${Number(h.remaining||0)>0?'باقي من الدين':'تم الدفع'}</span></td>
+                <td class="p-1"><input data-history-field="amount" value="${Number(h.amount||0)}" class="w-24 border rounded p-1"></td>
+                <td class="p-1"><input data-history-field="remaining" value="${Number(h.remaining||0)}" class="w-24 border rounded p-1"></td>
+                <td class="p-1"><input data-history-field="date" type="date" value="${String(h.date||'').slice(0,10)}" class="border rounded p-1"></td>
             </tr>
         `).join('');
 
@@ -1128,11 +1229,12 @@
         modal.innerHTML = `
             <div class="bg-white text-gray-800 rounded-2xl p-6 max-w-lg w-full max-h-[85vh] overflow-y-auto text-right">
                 <div class="flex justify-between items-center border-b pb-3 mb-4">
-                    <h3 class="text-lg font-bold">تفاصيل حساب الزبون: ${custItems[0].name}</h3>
+                    <h3 class="text-lg font-bold">تفاصيل وتعديل حساب الزبون</h3>
                     <button onclick="this.closest('.loading-overlay').remove()" class="text-xl font-bold">&times;</button>
                 </div>
                 
-                <h4 class="font-bold text-sm mb-2 text-blue-700">الأجهزة المسجلة:</h4>
+                <div class="grid grid-cols-3 gap-2 mb-4 bg-blue-50 p-3 rounded-xl text-xs"><label class="font-bold">رقم التسلسل<input id="detailSeq" value="${custItems[0].seq||''}" class="w-full border rounded p-2 mt-1"></label><label class="font-bold">اسم الزبون<input id="detailName" value="${String(custItems[0].name||'').replace(/"/g,'&quot;')}" class="w-full border rounded p-2 mt-1"></label><label class="font-bold">رقم الهاتف<input id="detailPhone" value="${custItems[0].phone||''}" class="w-full border rounded p-2 mt-1"></label></div>
+                <h4 class="font-bold text-sm mb-2 text-blue-700">الأجهزة المسجلة وتعديل مبالغها:</h4>
                 <div class="mb-4">${itemsHtml}</div>
 
                 <h4 class="font-bold text-sm mb-2 text-green-700">سجل الدفعات والتاريخ:</h4>
@@ -1142,7 +1244,7 @@
                     </thead>
                     <tbody>${historyHtml || '<tr><td colspan="5" class="p-3 text-center text-gray-400">لا توجد معاملات حتى الآن</td></tr>'}</tbody>
                 </table>
-                <div class="grid grid-cols-2 gap-2 mt-4"><button onclick="printCustomerTransactionHistory('${phone}')" class="btn-primary py-2 rounded-xl"><i class="fas fa-print"></i> طباعة سجل التفاصيل</button><button onclick="this.closest('.loading-overlay').remove()" class="btn-secondary py-2 rounded-xl">إغلاق</button></div>
+                <div class="grid grid-cols-3 gap-2 mt-4"><button onclick="saveCustomerDetailsEdits('${phone}', this.closest('.loading-overlay'))" class="btn-success py-2 rounded-xl"><i class="fas fa-save"></i> حفظ كل التعديلات</button><button onclick="printCustomerTransactionHistory('${phone}')" class="btn-primary py-2 rounded-xl"><i class="fas fa-print"></i> طباعة السجل</button><button onclick="this.closest('.loading-overlay').remove()" class="btn-secondary py-2 rounded-xl">إغلاق</button></div>
             </div>
         `;
         document.body.appendChild(modal);
@@ -1154,7 +1256,7 @@
     function openAddDeviceToCustModal(phone) {
         currentAddDevCustomerPhone = phone;
         let all = [...phonesDebts, ...devicesDebts];
-        let cust = all.find(d => d.phone === phone);
+        let cust = all.find(d => (d.customerKey || (d.phone ? 'phone:'+d.phone : 'record:'+d.name+'|'+d.seq)) === phone);
         if(!cust) return;
 
         document.getElementById("addDevCustName").textContent = cust.name;
@@ -1172,7 +1274,7 @@
         let monthly = parseFloat((monthlyStr||"0").replace(/,/g, ''));
 
         let all = [...phonesDebts, ...devicesDebts];
-        let cust = all.find(d => d.phone === currentAddDevCustomerPhone);
+        let cust = all.find(d => (d.customerKey || (d.phone ? 'phone:'+d.phone : 'record:'+d.name+'|'+d.seq)) === currentAddDevCustomerPhone);
 
         let newObj = {
             id: Date.now(),
@@ -1182,7 +1284,7 @@
             deviceType: name,
             totalAmount: total,
             remaining: total,
-            monthlyPayment: monthly, createdAt: new Date().toISOString()
+            monthlyPayment: monthly, installmentsRequired: monthly ? Math.ceil(total/monthly) : 0, createdAt: new Date().toISOString(), customerKey: cust.customerKey
         };
 
         phonesDebts.push(newObj);
@@ -1315,7 +1417,7 @@
         let uniquePhones = [...new Set(all.map(d=>d.phone))];
 
         uniquePhones.forEach(phone => {
-            let cust = all.find(d => d.phone === phone);
+            let cust = all.find(d => (d.customerKey || (d.phone ? 'phone:'+d.phone : 'record:'+d.name+'|'+d.seq)) === phone);
             select.innerHTML += `<option value="${cust.phone}">${cust.name} (${cust.phone})</option>`;
         });
 
@@ -1353,7 +1455,7 @@
             seq = document.getElementById("posNewSeq").value.trim();
             name = document.getElementById("posNewName").value.trim();
             phone = document.getElementById("posNewPhone").value.trim();
-            if(!seq || !name || !phone) { alert("يرجى إكمال بيانات الزبون الجديد"); return; }
+            if(!seq || !name) { alert("يرجى إكمال التسلسل والاسم"); return; }
         }
 
         selectedPosProduct.quantity--;
@@ -1501,34 +1603,67 @@
         });
     }
 
-    function addNewCustomer(sectionType, shouldPrint = false) {
-        let isPhone = sectionType === 'phones';
-        let seq = document.getElementById(isPhone ? "phoneSeq" : "deviceSeq").value.trim();
-        let name = document.getElementById(isPhone ? "phoneName" : "deviceName").value.trim();
-        let phone = document.getElementById(isPhone ? "phoneCustomerPhone" : "deviceCustomerPhone").value.trim();
-        let type = document.getElementById(isPhone ? "phoneType" : "deviceTypeName").value.trim();
-        let totalStr = document.getElementById(isPhone ? "phoneTotalAmount" : "deviceTotalAmount").value;
-        let monthlyStr = document.getElementById(isPhone ? "phoneMonthly" : "deviceMonthly").value;
-
-        if(!seq || !name || !phone || !type || !totalStr) { alert("يرجى إكمال جميع حقول البيع بالتقسيط!"); return; }
-
-        let total = parseFloat(totalStr.replace(/,/g, ''));
-        let monthly = parseFloat((monthlyStr||"0").replace(/,/g, ''));
-
-        let debtObj = { id: Date.now(), seq, name, phone, deviceType: type, totalAmount: total, remaining: total, monthlyPayment: monthly, createdAt: new Date().toISOString() };
-
-        if(isPhone) phonesDebts.push(debtObj);
-        else devicesDebts.push(debtObj);
-        addDebtTransaction(debtObj);
-
-        saveAllData();
-        alert("تم حفظ الزبون بنجاح في سجل التقسيط!");
-        renderAllModules();
-
-        if(shouldPrint) {
-            printA5ReceiptDirect(name, phone, 0, total, seq, type, 'دين', new Date());
-        }
+    function todayInputValue() { return new Date().toISOString().slice(0, 10); }
+    function clearCustomerForm(sectionType) {
+        const ids = sectionType === 'phones' ? ['phoneSeq','phoneName','phoneCustomerPhone','phoneType','phoneTotalAmount','phoneMonthly','phoneDownPayment','phoneInstallments'] : ['deviceSeq','deviceName','deviceCustomerPhone','deviceTypeName','deviceTotalAmount','deviceMonthly','deviceDownPayment','deviceInstallments'];
+        ids.forEach(id => { const el = document.getElementById(id); if (el) el.value = ''; });
+        const dateEl = document.getElementById(sectionType === 'phones' ? 'phoneDebtDate' : 'deviceDebtDate');
+        if (dateEl) dateEl.value = todayInputValue();
     }
+
+    function addNewCustomer(sectionType, shouldPrint = false) {
+        const isPhone = sectionType === 'phones';
+        const id = x => document.getElementById(isPhone ? 'phone'+x : 'device'+x);
+        const seq=id('Seq').value.trim(), name=id('Name').value.trim(), phone=id('CustomerPhone').value.trim();
+        const device=id(isPhone ? 'Type' : 'TypeName').value.trim();
+        const total=parseFloat(id('TotalAmount').value.replace(/,/g,''));
+        const monthly=parseFloat(id('Monthly').value.replace(/,/g,'')) || 0;
+        const down=parseFloat(id('DownPayment').value.replace(/,/g,'')) || 0;
+        const installments=parseInt(id('Installments').value || '0');
+        const dateValue=id('DebtDate').value || todayInputValue();
+        if(!seq || !name || !device || isNaN(total) || total <= 0) { alert('يرجى إكمال الاسم والتسلسل والجهاز وسعر التقسيط'); return; }
+        if(down < 0 || down > total) { alert('المقدمة يجب ألا تتجاوز سعر التقسيط'); return; }
+        const balance=total-down;
+        const debtObj={ id:Date.now()+Math.random(), seq,name,phone,deviceType:device,totalAmount:total,downPayment:down,remaining:balance,monthlyPayment:monthly,installmentsRequired:installments || (monthly ? Math.ceil(balance/monthly) : 0),createdAt:new Date(dateValue+'T00:00:00').toISOString(),customerKey:phone?'phone:'+phone:'record:'+name+'|'+seq };
+        if(isPhone) phonesDebts.push(debtObj); else devicesDebts.push(debtObj);
+        addDebtTransaction(debtObj); if(down>0) paymentHistory.push({id:Date.now()+Math.random(),type:'مقدمة',customerPhone:phone,customerName:name,seq,device,amount:down,remaining:balance,date:new Date(dateValue+'T00:00:00').toISOString(),monthYear:monthKey(dateValue)});
+        saveAllData(); renderAllModules();
+        if(shouldPrint) printA5ReceiptDirect(name,phone,down,balance,seq,device,'دين - مع مقدمة',new Date(dateValue+'T00:00:00'));
+        clearCustomerForm(sectionType); alert(shouldPrint?'تم الحفظ والطباعة وتفريغ الحقول بنجاح!':'تم الحفظ وتفريغ الحقول بنجاح!');
+    }
+
+    function openEditCustomerModal(debtId) {
+        const debt = [...phonesDebts, ...devicesDebts].find(d => String(d.id) === String(debtId));
+        if (!debt) return;
+        document.getElementById('editDebtId').value = debt.id;
+        document.getElementById('editCustomerPhone').value = debt.phone || '';
+        document.getElementById('editDebtDate').value = (debt.createdAt || new Date().toISOString()).slice(0,10);
+        document.getElementById('editTotalAmount').value = debt.totalAmount || 0;
+        document.getElementById('editMonthlyAmount').value = debt.monthlyPayment || 0;
+        document.getElementById('editRemainingAmount').value = debt.remaining || 0;
+        document.getElementById('editDownPayment').value = debt.downPayment || 0;
+        document.getElementById('editInstallments').value = debt.installmentsRequired || 0;
+        document.getElementById('editCustomerModal').classList.remove('hidden');
+    }
+
+    document.getElementById('saveCustomerEditBtn').onclick = () => {
+        const id = document.getElementById('editDebtId').value;
+        const debt = [...phonesDebts, ...devicesDebts].find(d => String(d.id) === String(id));
+        if (!debt) return;
+        const total = parseFloat(document.getElementById('editTotalAmount').value.replace(/,/g,''));
+        const monthly = parseFloat(document.getElementById('editMonthlyAmount').value.replace(/,/g,'')) || 0;
+        const remaining = parseFloat(document.getElementById('editRemainingAmount').value.replace(/,/g,''));
+        const down = parseFloat(document.getElementById('editDownPayment').value.replace(/,/g,'')) || 0;
+        const installments = parseInt(document.getElementById('editInstallments').value || '0');
+        if ([total, remaining].some(v => isNaN(v) || v < 0) || remaining > total || down > total) { alert('تحقق من المبالغ: المتبقي لا يمكن أن يكون أكبر من المبلغ الكلي.'); return; }
+        debt.phone = document.getElementById('editCustomerPhone').value.trim();
+        debt.totalAmount = total; debt.monthlyPayment = monthly; debt.remaining = remaining; debt.downPayment = down; debt.installmentsRequired = installments; debt.customerKey = debt.phone ? 'phone:'+debt.phone : 'record:'+debt.name+'|'+debt.seq;
+        const date = document.getElementById('editDebtDate').value;
+        if (date) debt.createdAt = new Date(date + 'T00:00:00').toISOString();
+        paymentHistory.push({ id: Date.now()+Math.random(), type: 'تعديل', customerPhone: debt.phone, customerName: debt.name, seq: debt.seq, device: debt.deviceType, amount: 0, remaining: debt.remaining, date: new Date().toISOString(), monthYear: new Date().toISOString().slice(0,7) });
+        saveAllData(); renderAllModules(); document.getElementById('editCustomerModal').classList.add('hidden'); alert('تم تعديل بيانات الزبون بنجاح.');
+    };
+
 
     // -------------------------------------------------------------------------
     // 13. الإحصائيات الشاملة
@@ -1584,8 +1719,20 @@
         renderStatsModule();
     }
 
+    function showPreviousDebt(sectionType) {
+        const isPhone = sectionType === 'phones';
+        const name = document.getElementById(isPhone ? 'phoneName' : 'deviceName').value.trim().toLowerCase();
+        const phone = document.getElementById(isPhone ? 'phoneCustomerPhone' : 'deviceCustomerPhone').value.trim();
+        const all = [...phonesDebts, ...devicesDebts];
+        const matches = all.filter(d => (name && String(d.name||'').toLowerCase() === name) || (phone && d.phone === phone));
+        const remaining = matches.reduce((sum,d) => sum + Number(d.remaining||0), 0);
+        const el = document.getElementById(isPhone ? 'phonePreviousDebt' : 'devicePreviousDebt');
+        if (el) el.textContent = remaining > 0 ? `تنبيه: على هذا الزبون دين سابق متبقي ${remaining.toLocaleString()} د.ع` : '';
+    }
+
     window.onload = function() {
         loadAllData();
+        ['phoneDebtDate','deviceDebtDate'].forEach(id => { const el=document.getElementById(id); if(el && !el.value) el.value=todayInputValue(); });
         setupLogoUpload();
         const templateSelect = document.getElementById('receiptTemplateSelect');
         if (templateSelect) templateSelect.onchange = e => localStorage.setItem('walid_receipt_template', e.target.value);
@@ -1600,7 +1747,13 @@
         document.getElementById("savePrintDeviceBtn").onclick = () => addNewCustomer('devices', true);
 
         document.getElementById("searchPhonesInput").oninput = () => renderCustomersModule('phones');
+        document.getElementById('phoneStatusFilter').onchange = () => renderCustomersModule('phones');
         document.getElementById("searchDevicesInput").oninput = () => renderCustomersModule('devices');
+        document.getElementById('phoneName').oninput = () => showPreviousDebt('phones');
+        document.getElementById('phoneCustomerPhone').oninput = () => showPreviousDebt('phones');
+        document.getElementById('deviceName').oninput = () => showPreviousDebt('devices');
+        document.getElementById('deviceCustomerPhone').oninput = () => showPreviousDebt('devices');
+        document.getElementById('deviceStatusFilter').onchange = () => renderCustomersModule('devices');
         document.getElementById('statsCategoryFilter').onchange = renderStatsModule;
         document.getElementById('statsStatusFilter').onchange = renderStatsModule;
         document.getElementById('statsMonthPicker').onchange = renderStatsModule;
@@ -1673,3 +1826,4 @@
 </script>
 </body>
 </html>
+
