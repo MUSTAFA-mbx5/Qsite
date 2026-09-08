@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
-    <title>نظام قساطي  v1.00 - محل وليد</title>
+    <title>نظام قساطي 1.2v - محل وليد</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/jsbarcode@3.11.5/dist/JsBarcode.all.min.js"></script>
@@ -64,6 +64,7 @@
             padding: 2px; text-align: center; background: #fff; page-break-inside: avoid;
         }
 
+        @page { margin: 0; }
         @media print {
             html, body { background: #fff !important; margin: 0 !important; padding: 0 !important; }
             body * { visibility: hidden !important; }
@@ -96,6 +97,7 @@
             #printArea.receipt-size-a4 { width: 210mm !important; min-height: 297mm !important; }
             #printArea.receipt-size-a5 { width: 148mm !important; min-height: 210mm !important; }
             #printArea.receipt-size-a6 { width: 105mm !important; min-height: 148mm !important; }
+            #printArea.receipt-template { height: var(--receipt-page-height, auto) !important; min-height: 0 !important; max-height: var(--receipt-page-height, none) !important; overflow: hidden !important; page-break-after: avoid !important; page-break-inside: avoid !important; }
         }
         .qr-preview img, .receipt-barcode img { image-rendering: crisp-edges; }
     </style>
@@ -133,7 +135,7 @@
             </div>
         </div>
         <div class="flex items-center gap-3">
-            <button id="specialBtn" class="btn-special btn-action"><i class="fas fa-star"></i> خاص (التحديثات)</button>
+            <button id="specialBtn" class="btn-special btn-action" title="التاريخ والوقت"><i class="fas fa-clock"></i> <span id="liveDateTime">--/--/---- --:--:--</span></button>
             <button id="lockSystemBtn" class="btn-danger btn-action bg-red-600 hover:bg-red-700"><i class="fas fa-power-off"></i> غلق النظام</button>
         </div>
     </div>
@@ -179,7 +181,7 @@
                     <label class="block text-xs font-bold text-gray-600 mb-1">القسط الشهري (د.ع) *</label>
                     <input type="text" id="phoneMonthly" placeholder="سعر التسديد كل شهر" class="w-full border rounded-xl p-2.5 price-input">
                     <input type="text" id="phoneDownPayment" placeholder="المقدمة (اختياري)" class="w-full border rounded-xl p-2.5 price-input">
-                    <input type="number" id="phoneInstallments" placeholder="عدد الدفعات المطلوبة" min="1" class="w-full border rounded-xl p-2.5">
+                    <input type="number" id="phoneInstallments" placeholder="يحسب تلقائياً" min="1" readonly class="w-full border rounded-xl p-2.5 bg-slate-100">
                 </div>
             </div>
             <div class="flex flex-wrap gap-3 mt-5 border-t pt-4">
@@ -230,7 +232,7 @@
                     <label class="block text-xs font-bold text-gray-600 mb-1">القسط الشهري (د.ع) *</label>
                     <input type="text" id="deviceMonthly" placeholder="سعر التسديد كل شهر" class="w-full border rounded-xl p-2.5 price-input">
                     <input type="text" id="deviceDownPayment" placeholder="المقدمة (اختياري)" class="w-full border rounded-xl p-2.5 price-input">
-                    <input type="number" id="deviceInstallments" placeholder="عدد الدفعات المطلوبة" min="1" class="w-full border rounded-xl p-2.5">
+                    <input type="number" id="deviceInstallments" placeholder="يحسب تلقائياً" min="1" readonly class="w-full border rounded-xl p-2.5 bg-slate-100">
                 </div>
             </div>
             <div class="flex flex-wrap gap-3 mt-5 border-t pt-4">
@@ -755,9 +757,7 @@
             if(p.length >= 4) { systemPin = p; saveAllData(); alert("تم تغيير الرمز بنجاح!"); document.getElementById("newPinInput").value = ""; }
         };
 
-        document.getElementById("specialBtn").onclick = () => {
-            document.getElementById("specialModal").classList.remove("hidden");
-        };
+        document.getElementById("specialBtn").onclick = () => { const el=document.getElementById('liveDateTime'); if(el) el.textContent = formatDateTime(new Date()); };
 
         document.getElementById("checkGithubUpdateBtn").onclick = () => {
             if(navigator.onLine) {
@@ -814,21 +814,42 @@
     // -------------------------------------------------------------------------
     // 5. معالجة الأصفار تلقائياً
     // -------------------------------------------------------------------------
+    function normalizeArabicDigits(value) {
+        return String(value ?? '')
+            .replace(/[٠-٩]/g, ch => String(ch.charCodeAt(0) - 0x0660))
+            .replace(/[۰-۹]/g, ch => String(ch.charCodeAt(0) - 0x06F0))
+            .replace(/[٬،]/g, ',')
+            .replace(/[٫]/g, '.');
+    }
+    function normalizeMoneyInput(input) {
+        if (!input || !input.value) return;
+        input.value = normalizeArabicDigits(input.value);
+    }
     function setupPriceInputsAutoZeros() {
-        document.getElementById("autoAddZerosToggle").onchange = (e) => {
-            autoAddZeros = e.target.checked;
-            saveAllData();
-        };
-
+        const toggle = document.getElementById("autoAddZerosToggle");
+        if (toggle) toggle.onchange = (e) => { autoAddZeros = e.target.checked; saveAllData(); };
         document.querySelectorAll(".price-input").forEach(input => {
-            input.onblur = function() {
-                if(!autoAddZeros || !this.value) return;
-                let val = this.value.replace(/,/g, '').trim();
-                if(!isNaN(val) && val.length > 0 && !val.endsWith("000")) {
-                    let num = parseFloat(val);
-                    if(num < 1000) this.value = (num * 1000).toLocaleString('en-US');
+            input.addEventListener('input', () => normalizeMoneyInput(input));
+            input.addEventListener('paste', () => setTimeout(() => normalizeMoneyInput(input), 0));
+            input.addEventListener('blur', function() {
+                normalizeMoneyInput(this);
+                if (!autoAddZeros || !this.value) return;
+                const val = this.value.replace(/,/g, '').trim();
+                const num = Number(val);
+                // الإدخال المختصر بالدينار: 1200 تصبح 1,200,000 عند تفعيل الخيار.
+                if (Number.isFinite(num) && num > 0 && num < 1000000) {
+                    this.value = Math.round(num * 1000).toLocaleString('en-US');
+                } else if (Number.isFinite(num)) {
+                    this.value = num.toLocaleString('en-US');
                 }
-            };
+            });
+        });
+        // الحقول المضافة ديناميكيًا أو غير الموسومة تبقى قابلة للتحويل عند الإدخال.
+        document.querySelectorAll('input[type="text"], input[type="number"]').forEach(input => {
+            if (!input.dataset.digitsReady) {
+                input.dataset.digitsReady = '1';
+                input.addEventListener('input', () => normalizeMoneyInput(input));
+            }
         });
     }
 
@@ -1111,6 +1132,17 @@
         printA5ReceiptDirect(custItems[0].name, custItems[0].phone || '', amt, newTotalRem, custItems[0].seq, custItems[0].deviceType, 'تسديد', new Date());
     };
 
+    function formatDateTime(value) { return transactionDate(value).toLocaleString('ar-IQ', {year:'numeric', month:'2-digit', day:'2-digit', hour:'2-digit', minute:'2-digit', second:'2-digit'}); }
+    function applyReceiptPrintSize() {
+        const size = localStorage.getItem('walid_receipt_size') || 'A5';
+        const dims = { A4: ['210mm','297mm'], A5: ['148mm','210mm'], A6: ['105mm','148mm'] }[size] || ['148mm','210mm'];
+        const area = document.getElementById('printArea');
+        if (area) { area.style.setProperty('--receipt-page-height', dims[1]); area.style.width = dims[0]; area.style.height = dims[1]; }
+        let style = document.getElementById('dynamicReceiptPageStyle');
+        if (!style) { style = document.createElement('style'); style.id = 'dynamicReceiptPageStyle'; document.head.appendChild(style); }
+        style.textContent = `@media print { @page { size: ${dims[0]} ${dims[1]}; margin: 0; } }`;
+    }
+
     function getReceiptPaperClass() {
         const size = localStorage.getItem('walid_receipt_size') || 'A5';
         return size === 'A4' ? 'receipt-size-a4' : size === 'A6' ? 'receipt-size-a6' : 'receipt-size-a5';
@@ -1126,13 +1158,20 @@
         const monthlyText = matchedDebt ? Number(matchedDebt.monthlyPayment || 0).toLocaleString() : '0';
         const installmentsText = matchedDebt ? (matchedDebt.installmentsRequired || '—') : '—';
         const code = `REC-${Date.now()}`;
+        const isPayment = transactionType === 'تسديد';
+        const receiptTitle = isPayment ? 'وصل تسديد' : 'وصل إضافة زبون';
+        const receiptContent = isPayment ? `
+            <div class="receipt-columns"><div><div class="receipt-row"><b>اسم الشخص</b><span>${safe(name)}</span></div><div class="receipt-row"><b>المبلغ المستلم</b><strong>${Number(paid||0).toLocaleString()} د.ع</strong></div></div><div><div class="receipt-row"><b>المبلغ المتبقي</b><strong>${Number(rem||0).toLocaleString()} د.ع</strong></div><div class="receipt-row"><b>التاريخ والوقت</b><span>${formatDateTime(transactionDateValue)}</span></div></div></div>
+            <div class="receipt-box"><div class="receipt-row"><b>الحالة</b><span>${Number(rem||0) > 0 ? 'متبقي من الدين' : 'تم التسديد بالكامل'}</span></div></div>` : `
+            <div class="receipt-columns"><div><div class="receipt-row"><b>اسم الشخص</b><span>${safe(name)}</span></div><div class="receipt-row"><b>نوع الجهاز</b><span>${safe(device)}</span></div><div class="receipt-row"><b>سعر التقسيط الكلي</b><strong>${matchedDebt ? Number(matchedDebt.totalAmount||0).toLocaleString() : Number(rem||0).toLocaleString()} د.ع</strong></div></div><div><div class="receipt-row"><b>المقدمة</b><span>${downText} د.ع</span></div><div class="receipt-row"><b>الدفع كل شهر</b><span>${monthlyText} د.ع</span></div><div class="receipt-row"><b>عدد الدفعات</b><span>${installmentsText}</span></div><div class="receipt-row"><b>التاريخ والوقت</b><span>${formatDateTime(transactionDateValue)}</span></div></div></div>
+            <div class="receipt-box"><div class="receipt-row"><b>المبلغ المتبقي بعد المقدمة</b><strong>${Number(rem||0).toLocaleString()} د.ع</strong></div></div>`;
         printArea.innerHTML = `
-            <div class="receipt-head"><div><h1 style="font-size:20px;font-weight:900;margin:0">محل وليد</h1><p style="margin:4px 0;font-size:11px">وصل معاملة رسمي</p></div><img class="receipt-logo" src="${appLogoUrl}" alt="اللوغو"></div>
-            <div class="receipt-columns"><div><div class="receipt-row"><b>اسم الزبون</b><span>${safe(name)}</span></div><div class="receipt-row"><b>رقم الهاتف</b><span>${safe(phone)}</span></div><div class="receipt-row"><b>التسلسل</b><span>${safe(seq || '---')}</span></div><div class="receipt-row"><b>المادة</b><span>${safe(device)}</span></div></div><div><div class="receipt-row"><b>نوع المعاملة</b><span>${safe(transactionType)}</span></div><div class="receipt-row"><b>التاريخ</b><span>${dateText}</span></div><div class="receipt-row"><b>المبلغ المستلم</b><strong>${Number(paid||0).toLocaleString()} د.ع</strong></div><div class="receipt-row"><b>المبلغ المتبقي</b><strong>${Number(rem||0).toLocaleString()} د.ع</strong></div></div></div>
-            <div class="receipt-box"><div class="receipt-row"><b>سعر التقسيط</b><span>${matchedDebt ? Number(matchedDebt.totalAmount||0).toLocaleString() : Number(rem||0).toLocaleString()} د.ع</span></div><div class="receipt-row"><b>المقدمة</b><span>${downText} د.ع</span></div><div class="receipt-row"><b>القسط الشهري</b><span>${monthlyText} د.ع</span></div><div class="receipt-row"><b>عدد الدفعات</b><span>${installmentsText}</span></div><div class="receipt-row"><b>الحالة</b><span>${Number(rem||0) > 0 ? 'متبقي من الدين' : 'تم التسديد بالكامل'}</span></div><div class="receipt-row"><b>تفاصيل المبلغ</b><span>${Number(paid||0).toLocaleString()} د.ع بتاريخ ${dateText}</span></div></div>
-            <div class="receipt-barcode"><div id="receiptSquareBarcode" style="display:inline-block"></div><div style="font-size:10px;margin-top:3px">${code}</div></div><p style="text-align:center;font-size:11px;margin-top:20px">شكراً لتعاملكم معنا</p>`;
+            <div class="receipt-head"><div><h1 style="font-size:20px;font-weight:900;margin:0">محل وليد</h1><p style="margin:4px 0;font-size:11px">${receiptTitle}</p></div><img class="receipt-logo" src="${appLogoUrl}" alt="اللوغو"></div>
+            ${receiptContent}
+            <div class="receipt-barcode"><div id="receiptSquareBarcode" style="display:inline-block"></div><div style="font-size:10px;margin-top:3px">${code}</div></div><p style="text-align:center;font-size:11px;margin-top:12px">شكراً لتعاملكم معنا</p>`;
         setTimeout(() => {
             new QRCode(document.getElementById('receiptSquareBarcode'), { text: code, width: 120, height: 120, correctLevel: QRCode.CorrectLevel.M });
+            applyReceiptPrintSize();
             window.print();
             setTimeout(() => { printArea.innerHTML = ''; printArea.className = 'hidden'; }, 800);
         }, 350);
@@ -1158,12 +1197,6 @@
         const name = modal.querySelector('#detailName').value.trim();
         const phone = modal.querySelector('#detailPhone').value.trim();
         if (!seq || !name) { alert('التسلسل والاسم مطلوبان'); return; }
-        for (const item of items) {
-            const box = modal.querySelector(`[data-detail-item="${item.id}"]`);
-            if (!box) continue;
-            const number = key => Number(box.querySelector(`[data-item-field="${key}"]`).value.replace(/,/g,'')) || 0;
-            if (number('remaining') > number('totalAmount') || number('downPayment') > number('totalAmount')) { alert('تحقق من المبالغ: المتبقي والمقدمة لا يمكن أن يتجاوزا سعر التقسيط.'); return; }
-        }
         items.forEach((item, index) => {
             item.seq = seq; item.name = name; item.phone = phone;
             const box = modal.querySelector(`[data-detail-item="${item.id}"]`);
@@ -1175,6 +1208,7 @@
                 item.monthlyPayment = Number(val('monthlyPayment').replace(/,/g,'')) || 0;
                 item.installmentsRequired = Number(val('installmentsRequired')) || 0;
                 item.remaining = Number(val('remaining').replace(/,/g,'')) || 0;
+                if (item.remaining > item.totalAmount || item.downPayment > item.totalAmount) throw new Error('المبالغ غير صحيحة');
             }
             item.customerKey = phone ? 'phone:'+phone : 'record:'+name+'|'+seq;
         });
@@ -1198,7 +1232,7 @@
         let custItems = all.filter(d => (d.customerKey || (d.phone ? 'phone:'+d.phone : 'record:'+d.name+'|'+d.seq)) === phone);
         if(custItems.length === 0) return;
 
-        let custHistory = paymentHistory.filter(h => custItems.some(item => h.customerPhone === (item.phone || '') && (!h.device || h.device === item.deviceType)));
+        let custHistory = paymentHistory.filter(h => h.customerPhone === (custItems[0]?.phone || ''));
 
         let itemsHtml = custItems.map(item => `
             <div class="border p-3 rounded-xl mb-2 bg-slate-50" data-detail-item="${item.id}">
@@ -1603,6 +1637,16 @@
         });
     }
 
+    function updateInstallmentPreview(sectionType) {
+        const isPhone = sectionType === 'phones';
+        const prefix = isPhone ? 'phone' : 'device';
+        const total = parseFloat(document.getElementById(prefix+'TotalAmount').value.replace(/,/g,'')) || 0;
+        const down = parseFloat(document.getElementById(prefix+'DownPayment').value.replace(/,/g,'')) || 0;
+        const monthly = parseFloat(document.getElementById(prefix+'Monthly').value.replace(/,/g,'')) || 0;
+        const field = document.getElementById(prefix+'Installments');
+        if (field) field.value = monthly > 0 ? Math.ceil(Math.max(0,total-down)/monthly) : '';
+    }
+
     function todayInputValue() { return new Date().toISOString().slice(0, 10); }
     function clearCustomerForm(sectionType) {
         const ids = sectionType === 'phones' ? ['phoneSeq','phoneName','phoneCustomerPhone','phoneType','phoneTotalAmount','phoneMonthly','phoneDownPayment','phoneInstallments'] : ['deviceSeq','deviceName','deviceCustomerPhone','deviceTypeName','deviceTotalAmount','deviceMonthly','deviceDownPayment','deviceInstallments'];
@@ -1619,7 +1663,7 @@
         const total=parseFloat(id('TotalAmount').value.replace(/,/g,''));
         const monthly=parseFloat(id('Monthly').value.replace(/,/g,'')) || 0;
         const down=parseFloat(id('DownPayment').value.replace(/,/g,'')) || 0;
-        const installments=parseInt(id('Installments').value || '0');
+        const installments=monthly > 0 ? Math.ceil(Math.max(0, total-down) / monthly) : 0;
         const dateValue=id('DebtDate').value || todayInputValue();
         if(!seq || !name || !device || isNaN(total) || total <= 0) { alert('يرجى إكمال الاسم والتسلسل والجهاز وسعر التقسيط'); return; }
         if(down < 0 || down > total) { alert('المقدمة يجب ألا تتجاوز سعر التقسيط'); return; }
@@ -1732,12 +1776,13 @@
 
     window.onload = function() {
         loadAllData();
+        const updateClock = () => { const el=document.getElementById('liveDateTime'); if(el) el.textContent = formatDateTime(new Date()); }; updateClock(); setInterval(updateClock, 1000);
         ['phoneDebtDate','deviceDebtDate'].forEach(id => { const el=document.getElementById(id); if(el && !el.value) el.value=todayInputValue(); });
         setupLogoUpload();
         const templateSelect = document.getElementById('receiptTemplateSelect');
         if (templateSelect) templateSelect.onchange = e => localStorage.setItem('walid_receipt_template', e.target.value);
         const paperSizeSelect = document.getElementById('receiptPaperSizeSelect');
-        if (paperSizeSelect) paperSizeSelect.onchange = e => localStorage.setItem('walid_receipt_size', e.target.value);
+        if (paperSizeSelect) paperSizeSelect.onchange = e => { localStorage.setItem('walid_receipt_size', e.target.value); applyReceiptPrintSize(); };
         initLoginGuard();
         initTabs();
 
@@ -1749,6 +1794,8 @@
         document.getElementById("searchPhonesInput").oninput = () => renderCustomersModule('phones');
         document.getElementById('phoneStatusFilter').onchange = () => renderCustomersModule('phones');
         document.getElementById("searchDevicesInput").oninput = () => renderCustomersModule('devices');
+        ['phoneTotalAmount','phoneDownPayment','phoneMonthly'].forEach(id => document.getElementById(id).oninput = () => updateInstallmentPreview('phones'));
+        ['deviceTotalAmount','deviceDownPayment','deviceMonthly'].forEach(id => document.getElementById(id).oninput = () => updateInstallmentPreview('devices'));
         document.getElementById('phoneName').oninput = () => showPreviousDebt('phones');
         document.getElementById('phoneCustomerPhone').oninput = () => showPreviousDebt('phones');
         document.getElementById('deviceName').oninput = () => showPreviousDebt('devices');
@@ -1757,7 +1804,7 @@
         document.getElementById('statsCategoryFilter').onchange = renderStatsModule;
         document.getElementById('statsStatusFilter').onchange = renderStatsModule;
         document.getElementById('statsMonthPicker').onchange = renderStatsModule;
-        document.getElementById('printStatsBtn').onclick = () => { const area=document.getElementById('printArea'); area.className='receipt-template modern ' + getReceiptPaperClass(); area.innerHTML='<h2>سجل الإحصائية</h2>'+document.getElementById('monthlyCustomersContainer').innerHTML; setTimeout(()=>{window.print();setTimeout(()=>{area.innerHTML="";area.className="hidden"},700)},200); };
+        document.getElementById('printStatsBtn').onclick = () => { const area=document.getElementById('printArea'); area.className='receipt-template modern ' + getReceiptPaperClass(); area.innerHTML='<h2>سجل الإحصائية</h2>'+document.getElementById('monthlyCustomersContainer').innerHTML; setTimeout(()=>{applyReceiptPrintSize();window.print();setTimeout(()=>{area.innerHTML="";area.className="hidden"},700)},200); };
 
         document.getElementById("backupNowBtn").onclick = () => {
             let jsonStr = JSON.stringify({
