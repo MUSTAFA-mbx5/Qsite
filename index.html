@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
-    <title>نظام قساطي 1.2v - محل وليد</title>
+    <title>نظام قساطي المتكامل - محل وليد</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/jsbarcode@3.11.5/dist/JsBarcode.all.min.js"></script>
@@ -100,9 +100,32 @@
             #printArea.receipt-template { height: var(--receipt-page-height, auto) !important; min-height: 0 !important; max-height: var(--receipt-page-height, none) !important; overflow: hidden !important; page-break-after: avoid !important; page-break-inside: avoid !important; }
         }
         .qr-preview img, .receipt-barcode img { image-rendering: crisp-edges; }
+        body.theme-official { background: linear-gradient(135deg,#eef2ff,#f8fafc); }
+        body.theme-luxury { background: radial-gradient(circle at top,#fff7ed,#f1f5f9 65%); }
+        body.theme-animated { background: linear-gradient(120deg,#eff6ff,#f5f3ff,#ecfeff); background-size:300% 300%; animation: walidGradient 12s ease infinite; }
+        body.theme-luxury .bg-gradient-to-l { background: linear-gradient(100deg,#7c2d12,#b45309,#78350f) !important; }
+        body.theme-animated .bg-gradient-to-l { background: linear-gradient(100deg,#312e81,#0369a1,#0f766e) !important; background-size:200% 200%; animation: walidGradient 7s ease infinite; }
+        body.theme-official .bg-gradient-to-l { background: linear-gradient(100deg,#1e3a8a,#3730a3,#0f172a) !important; }
+        @keyframes walidGradient { 0%,100%{background-position:0% 50%} 50%{background-position:100% 50%} }
+        .receipt-style-1 { border-top:12px solid #1e3a8a; }
+        .receipt-style-2 { border:3px solid #2563eb; border-radius:12px; }
+        .receipt-style-3 { border:4px double #111; }
+        .receipt-style-4 { background:linear-gradient(135deg,#fff,#eff6ff); border-right:8px solid #0ea5e9; }
+        .receipt-style-5 { background:#fffdf5; border:2px dashed #b45309; }
+        .receipt-style-6 { border-top:12px solid #7c3aed; }
+        .receipt-style-7 { border:3px solid #7c3aed; border-radius:12px; }
+        .receipt-style-8 { border:4px double #4c1d95; }
+        .receipt-style-9 { background:linear-gradient(135deg,#fff,#f5f3ff); border-right:8px solid #8b5cf6; }
+        .receipt-style-10 { background:#fdfaff; border:2px dashed #7e22ce; }
+        .receipt-style-11 { border-top:12px solid #0891b2; }
+        .receipt-style-12 { border:3px solid #0891b2; border-radius:12px; }
+        .receipt-style-13 { border:4px double #155e75; }
+        .receipt-style-14 { background:linear-gradient(135deg,#fff,#ecfeff); border-right:8px solid #06b6d4; }
+        .receipt-style-15 { background:#f0fdff; border:2px dashed #0e7490; }
+
     </style>
 </head>
-<body class="p-2 md:p-6">
+<body class="p-2 md:p-6 theme-official">
 
 <!-- شاشة تسجيل الدخول وحماية النظام -->
 <div id="loginScreen" class="loading-overlay">
@@ -194,7 +217,7 @@
             <h2 class="text-xl font-bold flex items-center gap-2 mb-4"><i class="fas fa-mobile-alt text-blue-600"></i> قائمة زبائن الموبايلات (تقسيط)</h2>
             <div class="mb-4 relative">
                 <i class="fas fa-search absolute right-4 top-3.5 text-gray-400"></i>
-                <input type="text" id="searchPhonesInput" placeholder="بحث باسم الزبون، رقم الهاتف، التسلسل، أو الجهاز..." class="w-full pr-11 pl-4 py-3 border rounded-xl focus:outline-none">
+                <div class="flex gap-2"><input type="text" id="searchPhonesInput" placeholder="اكتب رقم السجل أو كلمة من الاسم الثلاثي..." class="w-full pr-4 pl-4 py-3 border rounded-xl focus:outline-none"><button id="searchPhonesBtn" class="btn-primary px-5 rounded-xl font-bold"><i class="fas fa-search"></i> بحث</button></div>
                 <select id="phoneStatusFilter" class="w-full mt-2 border rounded-xl p-2 font-bold"><option value="all">فلترة: الكل</option><option value="paid">مسدد بالكامل</option><option value="unpaid">غير مسدد</option><option value="late">متأخر</option></select>
             </div>
             <div id="phonesDebtorsList" class="space-y-3 max-h-[500px] overflow-y-auto"></div>
@@ -245,7 +268,7 @@
             <h2 class="text-xl font-bold flex items-center gap-2 mb-4"><i class="fas fa-tv text-blue-600"></i> قائمة زبائن الأجهزة الكهربائية</h2>
             <div class="mb-4 relative">
                 <i class="fas fa-search absolute right-4 top-3.5 text-gray-400"></i>
-                <input type="text" id="searchDevicesInput" placeholder="بحث باسم الزبون، رقم الهاتف، التسلسل، أو الجهاز..." class="w-full pr-11 pl-4 py-3 border rounded-xl focus:outline-none">
+                <div class="flex gap-2"><input type="text" id="searchDevicesInput" placeholder="اكتب رقم السجل أو كلمة من الاسم الثلاثي..." class="w-full pr-4 pl-4 py-3 border rounded-xl focus:outline-none"><button id="searchDevicesBtn" class="btn-primary px-5 rounded-xl font-bold"><i class="fas fa-search"></i> بحث</button></div>
                 <select id="deviceStatusFilter" class="w-full mt-2 border rounded-xl p-2 font-bold"><option value="all">فلترة: الكل</option><option value="paid">مسدد بالكامل</option><option value="unpaid">غير مسدد</option><option value="late">متأخر</option></select>
             </div>
             <div id="devicesDebtorsList" class="space-y-3 max-h-[500px] overflow-y-auto"></div>
@@ -381,11 +404,8 @@
                 <p id="logoUploadStatus" class="text-xs text-green-700 font-bold mt-2"></p>
                 <div class="mt-3 flex flex-wrap items-center gap-2">
                     <label class="text-xs font-bold">تصميم الوصل:</label>
-                    <select id="receiptTemplateSelect" class="border rounded-xl p-2 font-bold">
-                        <option value="modern">حديث - اللوغو يسار والمعلومات يمين</option>
-                        <option value="classic">كلاسيكي - إطار مزدوج</option>
-                        <option value="compact">مختصر - معلومات مضغوطة</option>
-                    </select>
+                    <select id="receiptTemplateSelect" class="border rounded-xl p-2 font-bold"><option value="style-1">تصميم 1 - حجم A4</option><option value="style-2">تصميم 2 - حجم A4</option><option value="style-3">تصميم 3 - حجم A4</option><option value="style-4">تصميم 4 - حجم A4</option><option value="style-5">تصميم 5 - حجم A4</option></select>
+                    <label class="text-xs font-bold mr-2">الثيم:</label><select id="themeSelect" class="border rounded-xl p-2 font-bold"><option value="official">رسمي</option><option value="luxury">فاخر</option><option value="animated">متحرك</option></select>
                     <label class="text-xs font-bold mr-2">حجم الطباعة:</label>
                     <select id="receiptPaperSizeSelect" class="border rounded-xl p-2 font-bold">
                         <option value="A4">A4 - كبير</option>
@@ -418,7 +438,7 @@
                     <div>
                         <label class="block text-xs font-bold text-gray-600 mb-1">فترة الفحص الدوري للتغييرات:</label>
                         <select id="backupIntervalSelect" class="w-full border rounded-xl p-2.5 font-bold">
-                            <option value="1">كل دقيقة</option>
+                            <option value="0.083333">كل 5 ثوانٍ</option><option value="1">كل دقيقة</option>
                             <option value="15" selected>كل 15 دقيقة</option>
                             <option value="60">كل ساعة</option>
                         </select>
@@ -721,7 +741,8 @@
         document.getElementById("extraChatId").value = botSettings.extraChatIds;
         document.getElementById("headerLogo").src = appLogoUrl;
         const templateSelect = document.getElementById('receiptTemplateSelect');
-        if (templateSelect) templateSelect.value = localStorage.getItem('walid_receipt_template') || 'modern';
+        if (templateSelect) { refreshTemplateOptions(); templateSelect.onchange = e => localStorage.setItem('walid_receipt_template', e.target.value); }
+        const themeSelect = document.getElementById('themeSelect'); if (themeSelect) { const th=localStorage.getItem('walid_theme')||'official'; themeSelect.value=th; document.body.className='p-2 md:p-6 theme-'+th; themeSelect.onchange=e=>{ localStorage.setItem('walid_theme',e.target.value); document.body.className='p-2 md:p-6 theme-'+e.target.value; }; }
         const paperSizeSelect = document.getElementById('receiptPaperSizeSelect');
         if (paperSizeSelect) paperSizeSelect.value = localStorage.getItem('walid_receipt_size') || 'A5';
 
@@ -776,7 +797,7 @@
         
         function resetTimer() {
             if(autoBackupTimer) clearInterval(autoBackupTimer);
-            let mins = parseInt(select.value);
+            let mins = parseFloat(select.value);
             autoBackupTimer = setInterval(() => {
                 if(hasUnsavedChanges) {
                     executeSmartBackup();
@@ -814,6 +835,17 @@
     // -------------------------------------------------------------------------
     // 5. معالجة الأصفار تلقائياً
     // -------------------------------------------------------------------------
+    function normalizeArabicDigits(value) {
+        return String(value ?? '')
+            .replace(/[٠-٩]/g, ch => String(ch.charCodeAt(0) - 0x0660))
+            .replace(/[۰-۹]/g, ch => String(ch.charCodeAt(0) - 0x06F0))
+            .replace(/[٬،]/g, ',')
+            .replace(/[٫]/g, '.');
+    }
+    function normalizeMoneyInput(input) {
+        if (!input || !input.value) return;
+        input.value = normalizeArabicDigits(input.value);
+    }
     function normalizeArabicDigits(value) {
         return String(value ?? '')
             .replace(/[٠-٩]/g, ch => String(ch.charCodeAt(0) - 0x0660))
@@ -882,7 +914,8 @@
                 appLogoUrl = e.target.result;
                 document.getElementById("headerLogo").src = appLogoUrl;
         const templateSelect = document.getElementById('receiptTemplateSelect');
-        if (templateSelect) templateSelect.value = localStorage.getItem('walid_receipt_template') || 'modern';
+        if (templateSelect) { refreshTemplateOptions(); templateSelect.onchange = e => localStorage.setItem('walid_receipt_template', e.target.value); }
+        const themeSelect = document.getElementById('themeSelect'); if (themeSelect) { const th=localStorage.getItem('walid_theme')||'official'; themeSelect.value=th; document.body.className='p-2 md:p-6 theme-'+th; themeSelect.onchange=e=>{ localStorage.setItem('walid_theme',e.target.value); document.body.className='p-2 md:p-6 theme-'+e.target.value; }; }
         const paperSizeSelect = document.getElementById('receiptPaperSizeSelect');
         if (paperSizeSelect) paperSizeSelect.value = localStorage.getItem('walid_receipt_size') || 'A5';
                 saveAllData();
@@ -904,6 +937,10 @@
 
     function renderReceiptDesigner() {
         let canvas = document.getElementById("a5Canvas");
+        const selectedSize = localStorage.getItem('walid_receipt_size') || 'A5';
+        canvas.className = 'a5-canvas-container receipt-size-' + selectedSize.toLowerCase();
+        canvas.style.width = selectedSize === 'A4' ? '210mm' : selectedSize === 'A6' ? '105mm' : '148mm';
+        canvas.style.minHeight = selectedSize === 'A4' ? '297mm' : selectedSize === 'A6' ? '148mm' : '210mm';
         canvas.innerHTML = "";
         receiptDesign.elements.forEach(el => {
             let div = document.createElement("div");
@@ -984,7 +1021,7 @@
     function renderCustomersModule(sectionType) {
         let isPhone = sectionType === 'phones';
         let listContainer = document.getElementById(isPhone ? "phonesDebtorsList" : "devicesDebtorsList");
-        let searchVal = (document.getElementById(isPhone ? "searchPhonesInput" : "searchDevicesInput").value || "").toLowerCase();
+        let searchVal = normalizeArabicDigits((document.getElementById(isPhone ? "searchPhonesInput" : "searchDevicesInput").value || "").trim().toLowerCase());
         let debts = isPhone ? phonesDebts : devicesDebts;
 
         listContainer.innerHTML = "";
@@ -999,15 +1036,29 @@
         });
 
         const statusFilter = document.getElementById(isPhone ? 'phoneStatusFilter' : 'deviceStatusFilter')?.value || 'all';
+        const searchTokens = searchVal.split(/\s+/).filter(Boolean);
+        const exactToken = (value, query) => String(value || '').toLowerCase().split(/\s+/).some(token => token === query);
+        const numericSearch = /^\d+$/.test(searchVal);
+        const resultPriority = c => {
+            if (!searchTokens.length) return 0;
+            const words = c.name.toLowerCase().split(/\s+/);
+            const wordIndex = words.findIndex(w => searchTokens.every(q => w === q));
+            if (wordIndex >= 0) return wordIndex;
+            if (exactToken(c.seq, searchVal)) return 0;
+            if (exactToken(c.phone, searchVal)) return 0;
+            if (c.items.some(i => exactToken(i.deviceType, searchVal))) return 3;
+            return 9;
+        };
         let filtered = Object.values(grouped).filter(c => {
             const rem = c.items.reduce((sum, i) => sum + Number(i.remaining || 0), 0);
             const late = c.items.some(i => Number(i.remaining||0) > 0 && missedInstallments(i) > 0);
             const statusOk = statusFilter === 'all' || (statusFilter === 'paid' && rem <= 0) || (statusFilter === 'unpaid' && rem > 0) || (statusFilter === 'late' && late);
-            return statusOk && (c.name.toLowerCase().includes(searchVal) ||
-                   c.phone.toLowerCase().includes(searchVal) ||
-                   c.seq.toLowerCase().includes(searchVal) ||
-                   c.items.some(i => i.deviceType.toLowerCase().includes(searchVal)));
-        });
+            const nameMatch = searchTokens.length > 0 && searchTokens.every(q => c.name.toLowerCase().split(/\s+/).includes(q));
+            const seqMatch = numericSearch ? Number(c.seq) === Number(searchVal) : (searchTokens.length > 0 && searchTokens.every(q => exactToken(c.seq, q)));
+            const phoneMatch = searchTokens.length > 0 && searchTokens.every(q => exactToken(c.phone, q));
+            const deviceMatch = searchTokens.length > 0 && c.items.some(i => searchTokens.every(q => i.deviceType.toLowerCase().split(/\s+/).includes(q)));
+            return statusOk && (!searchTokens.length || nameMatch || seqMatch || phoneMatch || deviceMatch);
+        }).sort((a,b) => resultPriority(a) - resultPriority(b) || a.name.localeCompare(b.name, 'ar'));
 
         if(filtered.length === 0) {
             listContainer.innerHTML = "<p class='text-center text-gray-500 py-6 font-bold'>لا يوجد زبائن مطايقين للبحث</p>";
@@ -1143,6 +1194,23 @@
         style.textContent = `@media print { @page { size: ${dims[0]} ${dims[1]}; margin: 0; } }`;
     }
 
+    function getReceiptStyleClass() {
+        const size = localStorage.getItem('walid_receipt_size') || 'A5';
+        const selected = localStorage.getItem('walid_receipt_template') || 'style-1';
+        const n = Math.max(1, Math.min(5, parseInt(String(selected).replace('style-','')) || 1));
+        const offset = size === 'A4' ? 0 : size === 'A6' ? 10 : 5;
+        return 'receipt-style-' + (offset + n);
+    }
+    function refreshTemplateOptions() {
+        const sel = document.getElementById('receiptTemplateSelect'); if (!sel) return;
+        const size = localStorage.getItem('walid_receipt_size') || 'A5';
+        const offset = size === 'A4' ? 0 : size === 'A6' ? 10 : 5;
+        sel.innerHTML = '';
+        for (let i=1;i<=5;i++) { const opt=document.createElement('option'); opt.value='style-'+(offset+i); opt.textContent='تصميم '+i+' - '+size; sel.appendChild(opt); }
+        const current = localStorage.getItem('walid_receipt_template') || ('style-'+(offset+1));
+        sel.value = current; if (sel.value !== current) { sel.value='style-'+(offset+1); localStorage.setItem('walid_receipt_template',sel.value); }
+    }
+
     function getReceiptPaperClass() {
         const size = localStorage.getItem('walid_receipt_size') || 'A5';
         return size === 'A4' ? 'receipt-size-a4' : size === 'A6' ? 'receipt-size-a6' : 'receipt-size-a5';
@@ -1150,7 +1218,7 @@
 
     function printA5ReceiptDirect(name, phone, paid, rem, seq, device = 'تسديد حساب', transactionType = 'تسديد', transactionDateValue = new Date()) {
         let printArea = document.getElementById("printArea");
-        printArea.className = "receipt-template " + (localStorage.getItem('walid_receipt_template') || 'modern') + " " + getReceiptPaperClass();
+        printArea.className = "receipt-template " + getReceiptStyleClass() + " " + getReceiptPaperClass();
         const dateText = formatDate(transactionDateValue);
         const safe = v => String(v ?? '').replace(/[<>&"]/g, c => ({'<':'&lt;','>':'&gt;','&':'&amp;','"':'&quot;'}[c]));
         const matchedDebt = [...phonesDebts, ...devicesDebts].find(d => d.name === name && d.deviceType === device && (d.phone || '') === (phone || ''));
@@ -1183,9 +1251,9 @@
         if (!customer) return;
         const rows = paymentHistory.filter(h => h.customerPhone === (customer.phone || '') && h.device === customer.deviceType).sort((a,b) => transactionDate(a.date)-transactionDate(b.date));
         const printArea = document.getElementById('printArea');
-        printArea.className = 'receipt-template modern ' + getReceiptPaperClass();
+        printArea.className = 'receipt-template ' + getReceiptStyleClass() + ' ' + getReceiptPaperClass();
         printArea.innerHTML = `<div class="receipt-head"><div><h1 style="font-size:20px;font-weight:900;margin:0">سجل تفاصيل الزبون</h1><p>${customer.name} - ${customer.phone || 'بدون هاتف'}</p></div><img class="receipt-logo" src="${appLogoUrl}"></div><div class="receipt-box"><div class="receipt-row"><b>التسلسل</b><span>${customer.seq || '---'}</span></div><div class="receipt-row"><b>الأجهزة</b><span>${all.filter(d => (d.customerKey || (d.phone ? 'phone:'+d.phone : 'record:'+d.name+'|'+d.seq)) === customerKey).map(d=>d.deviceType).join('، ')}</span></div></div><table style="width:100%;border-collapse:collapse;margin-top:14px;font-size:11px"><thead><tr style="background:#e5e7eb"><th style="border:1px solid #222;padding:6px">نوع المعاملة</th><th style="border:1px solid #222;padding:6px">الحالة</th><th style="border:1px solid #222;padding:6px">المبلغ</th><th style="border:1px solid #222;padding:6px">المتبقي</th><th style="border:1px solid #222;padding:6px">التاريخ</th></tr></thead><tbody>${rows.map(h=>`<tr><td style="border:1px solid #222;padding:6px">${h.type || (h.amount ? 'تسديد' : 'دين')}</td><td style="border:1px solid #222;padding:6px">${Number(h.remaining||0)>0?'باقي من الدين':'تم الدفع'}</td><td style="border:1px solid #222;padding:6px">${Number(h.amount||0).toLocaleString()} د.ع</td><td style="border:1px solid #222;padding:6px">${Number(h.remaining||0).toLocaleString()} د.ع</td><td style="border:1px solid #222;padding:6px">${formatDate(h.date)}</td></tr>`).join('')}</tbody></table><p style="text-align:center;margin-top:20px;font-size:11px">تمت الطباعة بتاريخ ${formatDate(new Date())}</p>`;
-        setTimeout(() => { window.print(); setTimeout(() => { printArea.innerHTML=''; printArea.className='hidden'; }, 800); }, 250);
+        setTimeout(() => { applyReceiptPrintSize(); window.print(); setTimeout(() => { printArea.innerHTML=''; printArea.className='hidden'; }, 800); }, 250);
     }
 
     function saveCustomerDetailsEdits(customerKey, modal) {
@@ -1570,7 +1638,7 @@
             }, 50);
         });
 
-        setTimeout(() => { window.print(); }, 400);
+        setTimeout(() => { applyReceiptPrintSize(); window.print(); }, 400);
     };
 
     // -------------------------------------------------------------------------
@@ -1781,8 +1849,9 @@
         setupLogoUpload();
         const templateSelect = document.getElementById('receiptTemplateSelect');
         if (templateSelect) templateSelect.onchange = e => localStorage.setItem('walid_receipt_template', e.target.value);
+        const themeSelect = document.getElementById('themeSelect'); if (themeSelect) { const th=localStorage.getItem('walid_theme')||'official'; themeSelect.value=th; document.body.className='p-2 md:p-6 theme-'+th; themeSelect.onchange=e=>{ localStorage.setItem('walid_theme',e.target.value); document.body.className='p-2 md:p-6 theme-'+e.target.value; }; }
         const paperSizeSelect = document.getElementById('receiptPaperSizeSelect');
-        if (paperSizeSelect) paperSizeSelect.onchange = e => { localStorage.setItem('walid_receipt_size', e.target.value); applyReceiptPrintSize(); };
+        if (paperSizeSelect) paperSizeSelect.onchange = e => { localStorage.setItem('walid_receipt_size', e.target.value); refreshTemplateOptions(); applyReceiptPrintSize(); };
         initLoginGuard();
         initTabs();
 
@@ -1792,8 +1861,12 @@
         document.getElementById("savePrintDeviceBtn").onclick = () => addNewCustomer('devices', true);
 
         document.getElementById("searchPhonesInput").oninput = () => renderCustomersModule('phones');
+        document.getElementById("searchPhonesBtn").onclick = () => renderCustomersModule('phones');
+        document.getElementById("searchPhonesInput").onkeydown = e => { if (e.key === 'Enter') renderCustomersModule('phones'); };
         document.getElementById('phoneStatusFilter').onchange = () => renderCustomersModule('phones');
         document.getElementById("searchDevicesInput").oninput = () => renderCustomersModule('devices');
+        document.getElementById("searchDevicesBtn").onclick = () => renderCustomersModule('devices');
+        document.getElementById("searchDevicesInput").onkeydown = e => { if (e.key === 'Enter') renderCustomersModule('devices'); };
         ['phoneTotalAmount','phoneDownPayment','phoneMonthly'].forEach(id => document.getElementById(id).oninput = () => updateInstallmentPreview('phones'));
         ['deviceTotalAmount','deviceDownPayment','deviceMonthly'].forEach(id => document.getElementById(id).oninput = () => updateInstallmentPreview('devices'));
         document.getElementById('phoneName').oninput = () => showPreviousDebt('phones');
@@ -1804,7 +1877,7 @@
         document.getElementById('statsCategoryFilter').onchange = renderStatsModule;
         document.getElementById('statsStatusFilter').onchange = renderStatsModule;
         document.getElementById('statsMonthPicker').onchange = renderStatsModule;
-        document.getElementById('printStatsBtn').onclick = () => { const area=document.getElementById('printArea'); area.className='receipt-template modern ' + getReceiptPaperClass(); area.innerHTML='<h2>سجل الإحصائية</h2>'+document.getElementById('monthlyCustomersContainer').innerHTML; setTimeout(()=>{applyReceiptPrintSize();window.print();setTimeout(()=>{area.innerHTML="";area.className="hidden"},700)},200); };
+        document.getElementById('printStatsBtn').onclick = () => { const area=document.getElementById('printArea'); area.className='receipt-template ' + getReceiptStyleClass() + ' ' + getReceiptPaperClass(); area.innerHTML='<h2>سجل الإحصائية</h2>'+document.getElementById('monthlyCustomersContainer').innerHTML; setTimeout(()=>{applyReceiptPrintSize();window.print();setTimeout(()=>{area.innerHTML="";area.className="hidden"},700)},200); };
 
         document.getElementById("backupNowBtn").onclick = () => {
             let jsonStr = JSON.stringify({
