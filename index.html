@@ -254,6 +254,55 @@
           #printArea.receipt-page-frame .receipt-shape{margin:0!important; width:100%!important;max-width:none!important;min-height:0!important;max-height:100%!important;box-sizing:border-box!important;page-break-inside:avoid!important;break-inside:avoid!important;overflow:hidden!important;}
           #printArea.receipt-page-frame.receipt-layout-a6 .receipt-shape{height:100%!important;padding:3mm!important;}
         }
+
+        /* طباعة الوصل فقط: بداية الورقة، بدون إضافات أو صفحات فارغة */
+        @media print {
+          html, body { margin:0!important; padding:0!important; width:auto!important; height:auto!important; overflow:hidden!important; }
+          body > *:not(#printArea) { display:none!important; }
+          #printArea.receipt-page-frame { position:absolute!important; left:0!important; top:0!important; right:auto!important; bottom:auto!important; display:block!important; visibility:visible!important; margin:0!important; padding:0!important; border:0!important; box-shadow:none!important; overflow:hidden!important; page-break-before:avoid!important; page-break-after:avoid!important; page-break-inside:avoid!important; }
+          #printArea.receipt-page-frame, #printArea.receipt-page-frame.receipt-layout-a4 { width:210mm!important; height:297mm!important; min-height:297mm!important; max-height:297mm!important; }
+          #printArea.receipt-page-frame.receipt-layout-a5 { width:148mm!important; height:210mm!important; min-height:210mm!important; max-height:210mm!important; }
+          #printArea.receipt-page-frame.receipt-layout-a6 { width:105mm!important; height:148mm!important; min-height:148mm!important; max-height:148mm!important; }
+          #printArea.receipt-page-frame .receipt-shape { display:block!important; width:100%!important; max-width:none!important; min-width:0!important; min-height:0!important; max-height:none!important; height:auto!important; margin:0!important; padding:7mm!important; border-radius:0!important; clip-path:none!important; outline:none!important; box-sizing:border-box!important; overflow:visible!important; page-break-inside:avoid!important; break-inside:avoid!important; transform:none!important; }
+          #printArea.receipt-page-frame .receipt-shape::before { display:none!important; }
+          #printArea.receipt-page-frame .receipt-head { margin-top:0!important; }
+          #printArea.receipt-page-frame .receipt-box, #printArea.receipt-page-frame .receipt-columns { margin-top:4mm!important; }
+          #printArea.receipt-page-frame .receipt-disclaimer { margin-bottom:0!important; }
+        }
+
+        /* الإصلاح النهائي: ورقة A4، والوصل المختار في أعلى الصفحة */
+        @media print {
+          @page { size: 210mm 297mm portrait !important; margin:0!important; }
+          #printArea.receipt-page-frame { position:absolute!important; top:0!important; left:0!important; width:210mm!important; height:297mm!important; min-height:297mm!important; max-height:297mm!important; display:block!important; margin:0!important; padding:0!important; overflow:hidden!important; align-items:flex-start!important; justify-content:flex-start!important; }
+          #printArea.receipt-page-frame.receipt-layout-a4 .receipt-shape { width:210mm!important; height:297mm!important; }
+          #printArea.receipt-page-frame.receipt-layout-a5 .receipt-shape { width:148mm!important; height:210mm!important; }
+          #printArea.receipt-page-frame.receipt-layout-a6 .receipt-shape { width:105mm!important; height:148mm!important; }
+          #printArea.receipt-page-frame .receipt-shape { display:block!important; margin:5mm auto 0!important; min-width:0!important; min-height:0!important; max-width:none!important; max-height:none!important; box-sizing:border-box!important; overflow:hidden!important; page-break-before:avoid!important; page-break-after:avoid!important; page-break-inside:avoid!important; break-inside:avoid!important; }
+          #printArea.receipt-page-frame.receipt-layout-a4 .receipt-shape { margin-top:0!important; }
+          #printArea.receipt-page-frame.receipt-layout-a6 .receipt-shape { padding:5mm!important; }
+          #printArea.receipt-page-frame.receipt-style-1 .receipt-shape { border:3px solid #1e3a8a!important; border-radius:0!important; background:#fff!important; }
+          #printArea.receipt-page-frame.receipt-style-2 .receipt-shape { border:4px solid #2563eb!important; border-radius:14px!important; background:#f8fbff!important; }
+          #printArea.receipt-page-frame.receipt-style-3 .receipt-shape { border:6px double #111!important; outline:1px solid #777!important; outline-offset:-10px!important; background:#fff!important; }
+          #printArea.receipt-page-frame.receipt-style-4 .receipt-shape { border-right:12px solid #0891b2!important; border-left:2px solid #67e8f9!important; background:#f3feff!important; }
+          #printArea.receipt-page-frame.receipt-style-5 .receipt-shape { border:3px dashed #b45309!important; border-radius:5px!important; background:#fffdf4!important; }
+          #printArea.receipt-page-frame .receipt-shape::before { display:none!important; }
+        }
+
+        /* ملاءمة محتوى A6: تصغير متوازن بدون قص الكلام */
+        @media print {
+          #printArea.receipt-page-frame.receipt-layout-a6 .receipt-shape { font-size:9px!important; line-height:1.2!important; padding:4mm!important; overflow:hidden!important; }
+          #printArea.receipt-page-frame.receipt-layout-a6 .receipt-head { padding-bottom:3px!important; margin-bottom:4px!important; border-bottom-width:1px!important; }
+          #printArea.receipt-page-frame.receipt-layout-a6 .receipt-head h1 { font-size:15px!important; line-height:1.15!important; }
+          #printArea.receipt-page-frame.receipt-layout-a6 .receipt-head p { font-size:8px!important; margin:2px 0!important; }
+          #printArea.receipt-page-frame.receipt-layout-a6 .receipt-logo { width:38px!important; height:38px!important; }
+          #printArea.receipt-page-frame.receipt-layout-a6 .receipt-columns { grid-template-columns:1fr 1fr!important; gap:3mm!important; padding:3mm!important; margin-bottom:3mm!important; }
+          #printArea.receipt-page-frame.receipt-layout-a6 .receipt-box { padding:3mm!important; margin-top:3mm!important; }
+          #printArea.receipt-page-frame.receipt-layout-a6 .receipt-row { font-size:8.5px!important; line-height:1.2!important; padding:1.5mm 0!important; gap:3px!important; }
+          #printArea.receipt-page-frame.receipt-layout-a6 .receipt-barcode { margin-top:3mm!important; }
+          #printArea.receipt-page-frame.receipt-layout-a6 #receiptSquareBarcode img { width:48px!important; height:48px!important; }
+          #printArea.receipt-page-frame.receipt-layout-a6 .receipt-disclaimer { font-size:7px!important; line-height:1.15!important; margin:3px 0 0!important; }
+          #printArea.receipt-page-frame.receipt-layout-a6 .saved-design-elements { transform:scale(.78)!important; transform-origin:top right!important; }
+        }
 </style>
 </head>
 <body class="p-2 md:p-6 theme-official">
@@ -289,7 +338,7 @@
             </div>
         </div>
         <div class="flex items-center gap-3">
-            <button id="specialBtn" class="btn-special btn-action" title="التاريخ والوقت"><i class="fas fa-clock"></i> <span id="liveDateTime">--/--/---- --:--:--</span></button>
+            <button id="specialBtn" class="btn-special btn-action" title="فحص باركود"><i class="fas fa-camera"></i> فحص باركود</button>
             <button id="lockSystemBtn" class="btn-danger btn-action bg-red-600 hover:bg-red-700"><i class="fas fa-power-off"></i> غلق النظام</button>
         </div>
     </div>
@@ -636,12 +685,18 @@
             <button onclick="document.getElementById('designerModal').classList.add('hidden')" class="text-2xl font-bold text-gray-400">&times;</button>
         </div>
         <div class="flex flex-wrap items-center gap-3 mb-4 bg-slate-50 p-3 rounded-xl border">
-            <label class="text-xs font-bold">نوع الوصل: <select id="designerReceiptKind" class="border rounded p-1"><option value="add">إضافة زبون</option><option value="receipt">استلام / تسديد</option><option value="debt">دين</option></select></label>
-            <label class="text-xs font-bold">الحجم: <select id="designerSizeSelect" class="border rounded p-1"><option value="A4">A4</option><option value="A5">A5</option><option value="A6">A6</option></select></label>
+            <label class="text-xs font-bold">نوع الوصل: <select id="designerReceiptKind" class="border rounded p-1"><option value="all">كل الوصولات</option><option value="add">إضافة زبون</option><option value="receipt">استلام / تسديد</option><option value="debt">دين</option><option value="history">تفاصيل السجل</option><option value="warranty">ضمان</option><option value="report">تقارير</option></select></label>
+            <label class="text-xs font-bold">الحجم الأساسي: <select id="designerSizeSelect" class="border rounded p-1"><option value="A4">A4</option><option value="A5">A5</option><option value="A6">A6</option></select></label>
+            <label class="text-xs font-bold">عرض الوصل mm <input id="designerReceiptWidth" type="number" min="60" max="210" step="1" class="border rounded p-1 w-20"></label>
+            <label class="text-xs font-bold">طول الوصل mm <input id="designerReceiptHeight" type="number" min="50" max="297" step="1" class="border rounded p-1 w-20"></label>
+            <span class="text-xs font-bold">الموقع:</span><button id="designerMoveUp" type="button" class="btn-secondary px-2 py-1 rounded">↑</button><button id="designerMoveDown" type="button" class="btn-secondary px-2 py-1 rounded">↓</button><button id="designerMoveRight" type="button" class="btn-secondary px-2 py-1 rounded">→</button><button id="designerMoveLeft" type="button" class="btn-secondary px-2 py-1 rounded">←</button><span class="text-xs font-bold mr-2">تدوير:</span><button id="designerRotateLeft" type="button" class="btn-secondary px-2 py-1 rounded" title="تدوير يسار">↺</button><button id="designerRotateRight" type="button" class="btn-secondary px-2 py-1 rounded" title="تدوير يمين">↻</button><input id="designerRotation" type="number" min="-180" max="180" step="1" value="0" class="border rounded p-1 w-16" title="زاوية الدوران">°
             <label class="text-xs font-bold">التصميم: <select id="designerTemplateSelect" class="border rounded p-1"></select></label>
             <label class="text-xs font-bold">الخلفية: <input id="designerBgColor" type="color" value="#ffffff" class="w-8 h-8 align-middle"></label>
             <label class="text-xs font-bold">الإطار: <input id="designerBorderColor" type="color" value="#1e3a8a" class="w-8 h-8 align-middle"></label>
             <label class="text-xs font-bold"><input id="designerMotionToggle" type="checkbox" checked> حركة</label>
+            <span class="text-xs font-bold border-r pr-2">حجم العنصر:</span>
+            <button id="designerShrinkBtn" type="button" class="btn-secondary text-xs py-1.5 px-3 rounded-lg">تصغير −</button>
+            <button id="designerGrowBtn" type="button" class="btn-primary text-xs py-1.5 px-3 rounded-lg">تكبير ＋</button>
             <button onclick="addDesignerText()" class="btn-primary text-xs py-1.5 px-3 rounded-lg"><i class="fas fa-plus"></i> إضافة نص جديد</button>
             <label class="btn-purple text-xs py-1.5 px-3 rounded-lg cursor-pointer inline-flex items-center gap-1">
                 <i class="fas fa-image"></i> تغيير لوجو التطبيق
@@ -650,7 +705,7 @@
             <button id="saveReceiptDesignBtn" class="btn-success text-xs py-1.5 px-3 rounded-lg"><i class="fas fa-save"></i> حفظ التصميم</button>
             <button id="resetReceiptDesignBtn" class="btn-danger text-xs py-1.5 px-3 rounded-lg"><i class="fas fa-undo"></i> التصميم الافتراضي</button>
         </div>
-        <p class="text-xs text-slate-500 mb-3">اختر الحجم ثم التصميم لمشاهدة المعاينة. اسحب عناصر الوصل لترتيبها، وعدّل الخلفية والإطار ثم اضغط حفظ التصميم. الحقول المدعومة: {{seq}}، {{name}}، {{phone}}، {{device}}، {{paid}}، {{remaining}}.</p>
+        <p class="text-xs text-slate-500 mb-3">اختر الحجم ثم التصميم لمشاهدة المعاينة. اضغط على أي عنصر ثم استخدم تكبير أو تصغير، واسحب العناصر لترتيبها، ثم اضغط حفظ التصميم. الحقول المدعومة: {{seq}}، {{name}}، {{phone}}، {{device}}، {{paid}}، {{remaining}}.</p>
         <div id="a5Canvas" class="a5-canvas-container"></div>
     </div>
 </div>
@@ -947,7 +1002,7 @@
             if(p.length >= 4) { systemPin = p; saveAllData(); alert("تم تغيير الرمز بنجاح!"); document.getElementById("newPinInput").value = ""; }
         };
 
-        document.getElementById("specialBtn").onclick = () => { const el=document.getElementById('liveDateTime'); if(el) el.textContent = formatDateTime(new Date()); };
+        document.getElementById("specialBtn").onclick = () => { const btn=document.getElementById('openBarcodeVerifyBtn'); if(btn) btn.click(); };
 
         document.getElementById("checkGithubUpdateBtn").onclick = () => {
             if(navigator.onLine) {
@@ -1114,6 +1169,14 @@
         };
     }
 
+    function getKindDesignPrefs() { return JSON.parse(localStorage.getItem('walid_receipt_kind_designs') || '{}'); }
+    function saveKindDesignPrefs(prefs) { localStorage.setItem('walid_receipt_kind_designs', JSON.stringify(prefs)); }
+    function getSavedKindSelection(kind) {
+        const prefs=getKindDesignPrefs(); const globalSize=localStorage.getItem('walid_receipt_size')||'A5';
+        const globalStyle=parseInt(String(localStorage.getItem('walid_receipt_template')||'style-1').replace('style-',''))||1;
+        const offset=globalSize==='A4'?0:globalSize==='A6'?10:5;
+        return prefs[kind] || { size:globalSize, style:Math.max(1,Math.min(4,globalStyle-offset)) };
+    }
     function getDesignerKey(size, style, kind) { return size + '-' + (kind || document.getElementById('designerReceiptKind')?.value || 'add') + '-style-' + style; }
     function getDesignerStyleNumber() { const n=parseInt(String(localStorage.getItem('walid_receipt_template')||'style-1').replace('style-',''))||1; const size=localStorage.getItem('walid_receipt_size')||'A5'; return size==='A4'?n:size==='A6'?n-10:n-5; }
     function refreshDesignerTemplateSelect() {
@@ -1123,51 +1186,70 @@
         sel.value=String(Math.max(1,Math.min(5,getDesignerStyleNumber())));
     }
     function loadDesignerSelection() {
+        const kind=document.getElementById('designerReceiptKind').value;
+        const savedSelection = kind !== 'all' ? getSavedKindSelection(kind) : null;
+        if (savedSelection) { document.getElementById('designerSizeSelect').value=savedSelection.size; refreshDesignerTemplateSelect(); document.getElementById('designerTemplateSelect').value=String(savedSelection.style); }
         const size=document.getElementById('designerSizeSelect').value, style=document.getElementById('designerTemplateSelect').value;
-        activeDesignKey=getDesignerKey(size,style,document.getElementById('designerReceiptKind').value); const saved=receiptDesigns[activeDesignKey] || receiptDesigns[getDesignerKey(size,style,'add')];
+        const designKind = kind === 'all' ? 'add' : kind;
+        activeDesignKey=getDesignerKey(size,style,designKind); const saved=receiptDesigns[activeDesignKey] || receiptDesigns[getDesignerKey(size,style,'add')];
         receiptDesign=saved && saved.data ? saved.data : getDefaultReceiptDesign();
+        if (saved && saved.layout) saveDesignerLayout(saved.layout);
         const cfg=saved||{bg:'#ffffff',border:'#1e3a8a',motion:true};
         document.getElementById('designerBgColor').value=cfg.bg||'#ffffff'; document.getElementById('designerBorderColor').value=cfg.border||'#1e3a8a'; document.getElementById('designerMotionToggle').checked=cfg.motion!==false;
         renderReceiptDesigner();
     }
+    let designerSelectedElement = null;
+    function resizeSelectedDesignerElement(factor) {
+        const el = designerSelectedElement;
+        if (!el) { alert('اضغط أولاً على عنصر داخل الوصل لتحديده'); return; }
+        if (el.type === 'text') el.size = Math.max(6, Math.min(48, Number(el.size || 12) * factor));
+        else { el.width = Math.max(12, Math.min(260, Number(el.width || 60) * factor)); el.height = Math.max(12, Math.min(260, Number(el.height || 60) * factor)); }
+        renderReceiptDesigner();
+    }
+    function getDesignerLayout() {
+        const key=activeDesignKey || 'A4-add-style-1'; const all=JSON.parse(localStorage.getItem('walid_receipt_layouts')||'{}');
+        const size=document.getElementById('designerSizeSelect')?.value||'A5';
+        const defaults={A4:{width:190,height:280},A5:{width:148,height:210},A6:{width:105,height:148}};
+        return Object.assign({width:defaults[size].width,height:defaults[size].height,x:10,y:5,rotation:0}, all[key]||{});
+    }
+    function saveDesignerLayout(layout) {
+        const all=JSON.parse(localStorage.getItem('walid_receipt_layouts')||'{}'); all[activeDesignKey]=layout; localStorage.setItem('walid_receipt_layouts',JSON.stringify(all));
+    }
+    function updateDesignerLayout(patch) {
+        const l=getDesignerLayout(); Object.assign(l,patch); const pageW=210,pageH=297;
+        l.width=Math.max(60,Math.min(pageW,l.width)); l.height=Math.max(50,Math.min(pageH,l.height));
+        l.x=Math.max(0,Math.min(pageW-l.width,l.x)); l.y=Math.max(0,Math.min(pageH-l.height,l.y)); l.rotation=((Number(l.rotation||0)%360)+360)%360; if(l.rotation>180) l.rotation-=360; saveDesignerLayout(l); renderReceiptDesigner();
+    }
     function renderReceiptDesigner() {
-        let canvas = document.getElementById("a5Canvas");
-        const selectedSize = localStorage.getItem('walid_receipt_size') || 'A5';
-        canvas.className = 'a5-canvas-container receipt-size-' + selectedSize.toLowerCase();
-        canvas.style.width = selectedSize === 'A4' ? '210mm' : selectedSize === 'A6' ? '105mm' : '148mm';
-        canvas.style.minHeight = selectedSize === 'A4' ? '297mm' : selectedSize === 'A6' ? '148mm' : '210mm';
-        canvas.style.background = document.getElementById('designerBgColor')?.value || '#fff'; canvas.style.borderColor = document.getElementById('designerBorderColor')?.value || '#1e3a8a';
-        canvas.innerHTML = "";
-        receiptDesign.elements.forEach(el => {
-            let div = document.createElement("div");
-            div.className = "designer-element";
-            div.style.left = el.x + "px";
-            div.style.top = el.y + "px";
-
-            if(el.type === 'image') {
-                div.innerHTML = `<img src="${appLogoUrl}" style="width:${el.width}px; height:${el.height}px;" class="object-contain">`;
-            } else if(el.type === 'barcode') {
-                div.innerHTML = `<div id="des_bc_${el.id}" class="qr-preview ${showReceiptBarcode?'':'barcode-disabled'}"></div>`;
-                setTimeout(() => { new QRCode(document.getElementById(`des_bc_${el.id}`), { text: "SAMPLE-123", width: 72, height: 72, correctLevel: QRCode.CorrectLevel.M }); }, 10);
-            } else {
-                div.style.fontSize = (el.size || 12) + "pt";
-                div.style.fontWeight = el.weight || 'normal';
-                div.textContent = el.text;
-            }
-
-            div.onmousedown = function(e) {
-                let startX = e.clientX - div.offsetLeft;
-                let startY = e.clientY - div.offsetTop;
-                document.onmousemove = function(e) {
-                    let newX = e.clientX - startX;
-                    let newY = e.clientY - startY;
-                    div.style.left = newX + "px";
-                    div.style.top = newY + "px";
-                    el.x = newX; el.y = newY;
-                };
-                document.onmouseup = function() { document.onmousemove = null; };
-            };
-            canvas.appendChild(div);
+        const canvas=document.getElementById('a5Canvas'); const selectedSize=document.getElementById('designerSizeSelect')?.value||'A5';
+        const previewStyle=Math.max(1,Math.min(4,Number(document.getElementById('designerTemplateSelect')?.value||1))); const offset=selectedSize==='A4'?0:selectedSize==='A6'?10:5;
+        const layout=getDesignerLayout();
+        canvas.className='a4-preview-sheet receipt-style-'+(offset+previewStyle); canvas.style.cssText='position:relative;width:210mm!important;min-width:210mm;height:297mm!important;min-height:297mm!important;background:#e5e7eb;padding:0;overflow:hidden;box-sizing:border-box;margin:0 auto;';
+        canvas.innerHTML='';
+        const frame=document.createElement('div'); frame.className='designer-receipt-frame receipt-style-'+(offset+previewStyle); frame.style.cssText=`position:absolute;left:${layout.x}mm;top:${layout.y}mm;width:${layout.width}mm;height:${layout.height}mm;transform:rotate(${Number(layout.rotation||0)}deg);transform-origin:center center;box-sizing:border-box;overflow:hidden;background:${document.getElementById('designerBgColor')?.value||'#fff'};border:3px solid ${document.getElementById('designerBorderColor')?.value||'#1e3a8a'};`;
+        canvas.appendChild(frame);
+        const previewKind=document.getElementById('designerReceiptKind')?.value||'all';
+        const previewTitles={all:'معاينة كل الوصولات',add:'وصل إضافة زبون',receipt:'وصل استلام / تسديد',debt:'وصل دين',history:'تفاصيل السجل',warranty:'وصل ضمان',report:'تقرير'};
+        const previewFields={
+            all:['اسم الشخص','نوع الجهاز','المبلغ الكلي','المقدمة','التاريخ والوقت'],
+            add:['اسم الشخص','نوع الجهاز','سعر التقسيط الكلي','المقدمة','الدفع كل شهر','التاريخ والوقت'],
+            receipt:['اسم الشخص','المبلغ المستلم','المبلغ المتبقي','التاريخ والوقت'],
+            debt:['اسم الشخص','نوع الجهاز','المبلغ الكلي','المبلغ المتبقي','التاريخ والوقت'],
+            history:['اسم العميل','الدين الكلي','التسديد الكلي','المبلغ المتبقي','جدول التسديد'],
+            warranty:['اسم الشخص','نوع الجهاز','مدة الضمان','التاريخ'],
+            report:['عنوان التقرير','إجمالي المبيعات','إجمالي التسديد','إجمالي المتبقي']
+        }[previewKind] || ['اسم الشخص','المبلغ','التاريخ والوقت'];
+        frame.innerHTML=`<div class="designer-preview-content" style="position:absolute;inset:8mm;pointer-events:none;direction:rtl"><div style="font-size:16px;font-weight:900;border-bottom:2px solid currentColor;padding-bottom:3mm;margin-bottom:4mm">محل وليد - ${previewTitles[previewKind]||'وصل'}</div>${previewFields.map(f=>`<div style="display:flex;justify-content:space-between;border-bottom:1px solid #cbd5e1;padding:2.5mm 0;font-size:10px"><b>${f}</b><span>........................</span></div>`).join('')}<div style="font-size:8px;margin-top:5mm;text-align:center">كل وصل غير مختوم يعد باطل ولا نتحمل المسؤولية</div></div>`;
+        const w=document.getElementById('designerReceiptWidth'),h=document.getElementById('designerReceiptHeight'); if(w)w.value=Math.round(layout.width); if(h)h.value=Math.round(layout.height); const rot=document.getElementById('designerRotation'); if(rot)rot.value=Math.round(layout.rotation||0);
+        const previewElements=Array.isArray(receiptDesign?.elements) ? receiptDesign.elements : getDefaultReceiptDesign().elements;
+        previewElements.forEach(el=>{
+            const div=document.createElement('div'); div.className='designer-element'; div.style.left=el.x+'px'; div.style.top=el.y+'px';
+            if(el.type==='image') div.innerHTML=`<img src="${appLogoUrl}" style="width:${el.width}px;height:${el.height}px;object-fit:contain">`;
+            else if(el.type==='barcode'){ div.innerHTML=`<div id="des_bc_${el.id}" class="qr-preview ${showReceiptBarcode?'':'barcode-disabled'}"></div>`; setTimeout(()=>{const q=document.getElementById(`des_bc_${el.id}`);if(q&&window.QRCode)new QRCode(q,{text:'SAMPLE-123',width:Number(el.width||72),height:Number(el.height||72),correctLevel:QRCode.CorrectLevel.M});},10); }
+            else { div.style.fontSize=(el.size||12)+'pt'; div.style.fontWeight=el.weight||'normal'; div.textContent=el.text; }
+            div.onclick=e=>{e.stopPropagation();designerSelectedElement=el;frame.querySelectorAll('.designer-element').forEach(x=>x.style.outline='');div.style.outline='2px solid #ef4444';};
+            div.onmousedown=e=>{const sx=e.clientX-div.offsetLeft,sy=e.clientY-div.offsetTop;document.onmousemove=ev=>{el.x=ev.clientX-sx;el.y=ev.clientY-sy;div.style.left=el.x+'px';div.style.top=el.y+'px';};document.onmouseup=()=>document.onmousemove=null;};
+            frame.appendChild(div);
         });
     }
 
@@ -1181,18 +1263,41 @@
 
     document.getElementById("openDesignerModalBtn").onclick = () => {
         document.getElementById("designerModal").classList.remove("hidden");
-        const size=document.getElementById('designerSizeSelect'); size.value=localStorage.getItem('walid_receipt_size')||'A5'; document.getElementById('designerReceiptKind').value='add'; refreshDesignerTemplateSelect(); loadDesignerSelection();
+        const size=document.getElementById('designerSizeSelect'); size.value=localStorage.getItem('walid_receipt_size')||'A5'; document.getElementById('designerReceiptKind').value='all'; refreshDesignerTemplateSelect(); loadDesignerSelection();
     };
-    document.getElementById('designerSizeSelect').onchange = () => { refreshDesignerTemplateSelect(); loadDesignerSelection(); };
+    document.getElementById('designerSizeSelect').onchange = () => { localStorage.setItem('walid_receipt_size', document.getElementById('designerSizeSelect').value); const main=document.getElementById('receiptPaperSizeSelect'); if(main) main.value=document.getElementById('designerSizeSelect').value; refreshTemplateOptions(); refreshDesignerTemplateSelect(); loadDesignerSelection(); };
+    document.getElementById('designerReceiptWidth').oninput = e => updateDesignerLayout({width:Number(e.target.value)||100});
+    document.getElementById('designerReceiptHeight').oninput = e => updateDesignerLayout({height:Number(e.target.value)||150});
+    document.getElementById('designerMoveUp').onclick = () => { const l=getDesignerLayout(); updateDesignerLayout({y:l.y-2}); };
+    document.getElementById('designerMoveDown').onclick = () => { const l=getDesignerLayout(); updateDesignerLayout({y:l.y+2}); };
+    document.getElementById('designerMoveRight').onclick = () => { const l=getDesignerLayout(); updateDesignerLayout({x:l.x+2}); };
+    document.getElementById('designerMoveLeft').onclick = () => { const l=getDesignerLayout(); updateDesignerLayout({x:l.x-2}); };
+    document.getElementById('designerRotateLeft').onclick = () => { const l=getDesignerLayout(); updateDesignerLayout({rotation:Number(l.rotation||0)-15}); };
+    document.getElementById('designerRotateRight').onclick = () => { const l=getDesignerLayout(); updateDesignerLayout({rotation:Number(l.rotation||0)+15}); };
+    document.getElementById('designerRotation').oninput = e => updateDesignerLayout({rotation:Number(e.target.value)||0});
     document.getElementById('designerReceiptKind').onchange = loadDesignerSelection;
     document.getElementById('designerTemplateSelect').onchange = loadDesignerSelection;
     document.getElementById('designerBgColor').oninput = renderReceiptDesigner;
     document.getElementById('designerBorderColor').oninput = renderReceiptDesigner;
     document.getElementById('designerMotionToggle').onchange = renderReceiptDesigner;
+    document.getElementById('designerGrowBtn').onclick = () => resizeSelectedDesignerElement(1.15);
+    document.getElementById('designerShrinkBtn').onclick = () => resizeSelectedDesignerElement(0.85);
     document.getElementById("saveReceiptDesignBtn").onclick = () => {
-        receiptDesigns[activeDesignKey] = { data:receiptDesign, bg:document.getElementById('designerBgColor').value, border:document.getElementById('designerBorderColor').value, motion:document.getElementById('designerMotionToggle').checked };
+        const size = document.getElementById('designerSizeSelect').value;
+        const style = Number(document.getElementById('designerTemplateSelect').value || 1);
+        const kind = document.getElementById('designerReceiptKind').value || 'add';
+        receiptDesign = JSON.parse(JSON.stringify(receiptDesign));
+        const designSnapshot = { layout:getDesignerLayout(), data: JSON.parse(JSON.stringify(receiptDesign)), bg:document.getElementById('designerBgColor').value, border:document.getElementById('designerBorderColor').value, motion:document.getElementById('designerMotionToggle').checked, updatedAt:new Date().toISOString() };
+        const kinds = kind === 'all' ? ['add','receipt','debt','history','warranty','report'] : [kind];
+        const kindPrefs = getKindDesignPrefs();
+        kinds.forEach(k => { activeDesignKey=getDesignerKey(size,style,k); receiptDesigns[activeDesignKey]=JSON.parse(JSON.stringify(designSnapshot)); kindPrefs[k]={size,style}; });
+        saveKindDesignPrefs(kindPrefs);
+        localStorage.setItem('walid_receipt_size', size);
+        localStorage.setItem('walid_receipt_template','style-'+(size==='A4'?style:size==='A6'?style+10:style+5));
+        localStorage.setItem('walid_receipt_designs', JSON.stringify(receiptDesigns));
+        localStorage.setItem('walid_receipt_design', JSON.stringify(receiptDesign));
         localStorage.setItem('walid_receipt_template','style-'+(document.getElementById('designerSizeSelect').value==='A4'?document.getElementById('designerTemplateSelect').value:document.getElementById('designerSizeSelect').value==='A6'?Number(document.getElementById('designerTemplateSelect').value)+10:Number(document.getElementById('designerTemplateSelect').value)+5));
-        saveAllData(); alert('تم حفظ التصميم لهذا الحجم بشكل مستقل.');
+        saveAllData(); renderReceiptDesigner(); alert('تم حفظ التصميم لهذا الحجم بشكل مستقل.');
     };
     document.getElementById("resetReceiptDesignBtn").onclick = () => { receiptDesign=getDefaultReceiptDesign(); renderReceiptDesigner(); };
 
@@ -1264,7 +1369,7 @@
 
         filtered.forEach(cust => {
             let totalRem = cust.items.reduce((s, i) => s + i.remaining, 0);
-            let devicesText = cust.items.map(i => `${i.deviceType} (متبقي: ${i.remaining.toLocaleString()})`).join(' ، ');
+            let devicesText = cust.items.map(i => `${i.deviceType} (متبقي: ${money(i.remaining)} د.ع)`).join(' ، ');
 
             let card = document.createElement("div");
             card.className = "bg-white border p-4 rounded-xl shadow-sm flex flex-col gap-3";
@@ -1280,7 +1385,7 @@
                     </div>
                     <div class="text-left">
                         <p class="text-xs text-gray-500">إجمالي المتبقي</p>
-                        <p class="text-lg font-black text-red-600">${totalRem.toLocaleString()} د.ع</p>
+                        <p class="text-lg font-black text-red-600">${money(totalRem)} د.ع</p>
                     </div>
                 </div>
 
@@ -1300,13 +1405,14 @@
         let cleanPhone = phone.replace(/[^0-9]/g, '');
         if(cleanPhone.startsWith("07")) cleanPhone = "964" + cleanPhone.substring(1);
 
-        let text = `السلام عليكم ورحمة الله وبركاته، الأخ/الأخت (${name}) المحترم.\nنود تذكيركم بحلول موعد قسطكم لدى (محل وليد).\nالمبلغ المتبقي الكلي في حسابكم هو: (${totalRem.toLocaleString()} د.ع).\nيرجى التسديد في أقرب وقت. شاكرين تعاونكم معنا!`;
+        let text = `السلام عليكم ورحمة الله وبركاته، الأخ/الأخت (${name}) المحترم.\nنود تذكيركم بحلول موعد قسطكم لدى (محل وليد).\nالمبلغ المتبقي الكلي في حسابكم هو: (${money(totalRem)} د.ع).\nيرجى التسديد في أقرب وقت. شاكرين تعاونكم معنا!`;
         window.open(`https://wa.me/${cleanPhone}?text=${encodeURIComponent(text)}`, '_blank');
     }
 
     // -------------------------------------------------------------------------
     // 8. تسديد الديون وطباعة وصل A5 دقيق
     // -------------------------------------------------------------------------
+    function money(value) { const n=Number(value||0); return Number.isFinite(n) ? Math.round(n).toLocaleString('en-US').replace(/,/g,'.') : '0'; }
     function transactionDate(value) { return value ? new Date(value) : new Date(); }
     function newestFirst(a,b) { return transactionDate(b.date||b.createdAt)-transactionDate(a.date||a.createdAt) || Number(b.id||0)-Number(a.id||0); }
     function formatDate(value) { return transactionDate(value).toLocaleDateString('ar-IQ'); }
@@ -1346,12 +1452,12 @@
         let totalRem = custItems.reduce((s, i) => s + i.remaining, 0);
 
         document.getElementById("payCustName").textContent = name;
-        document.getElementById("payCustTotalRem").textContent = totalRem.toLocaleString() + " د.ع";
+        document.getElementById("payCustTotalRem").textContent = money(totalRem) + " د.ع";
 
         let select = document.getElementById("payDeviceSelect");
         select.innerHTML = `<option value="all">كل الأجهزة (تقسيم المبلغ بالتساوي)</option>`;
         custItems.forEach(item => {
-            select.innerHTML += `<option value="${item.id}">${item.deviceType} (متبقي: ${item.remaining.toLocaleString()} د.ع)</option>`;
+            select.innerHTML += `<option value="${item.id}">${item.deviceType} (متبقي: ${money(item.remaining)} د.ع)</option>`;
         });
 
         document.getElementById("paymentModal").classList.remove("hidden");
@@ -1397,12 +1503,13 @@
     function formatDateTime(value) { return transactionDate(value).toLocaleString('ar-IQ', {year:'numeric', month:'2-digit', day:'2-digit', hour:'2-digit', minute:'2-digit', second:'2-digit'}); }
     function applyReceiptPrintSize() {
         const size = localStorage.getItem('walid_receipt_size') || 'A5';
-        const dims = { A4: ['210mm','297mm'], A5: ['148mm','210mm'], A6: ['105mm','148mm'] }[size] || ['210mm','148mm'];
+        const dims = { A4: ['210mm','297mm'], A5: ['148mm','210mm'], A6: ['105mm','148mm'] }[size] || ['148mm','210mm'];
+        const pageDims = ['210mm','297mm'];
         const area = document.getElementById('printArea');
-        if (area) { area.style.setProperty('--receipt-page-height', dims[1]); area.style.width = dims[0]; area.style.height = dims[1]; }
+        if (area) { area.style.setProperty('--receipt-page-height', pageDims[1]); area.style.setProperty('--receipt-width', dims[0]); area.style.setProperty('--receipt-height', dims[1]); area.style.width = pageDims[0]; area.style.height = pageDims[1]; }
         let style = document.getElementById('dynamicReceiptPageStyle');
         if (!style) { style = document.createElement('style'); style.id = 'dynamicReceiptPageStyle'; document.head.appendChild(style); }
-        style.textContent = `@media print { @page { size: ${dims[0]} ${dims[1]}; margin: 0; } }`;
+        style.textContent = `@media print { @page { size: ${pageDims[0]} ${pageDims[1]} portrait; margin: 0; } }`;
     }
 
     function getReceiptStyleClass() {
@@ -1444,34 +1551,82 @@
         return 'receipt-shape receipt-shape-' + shapeNumber;
     }
 
+    function applySavedReceiptDesign(printArea, designKey) {
+        const cfg = receiptDesigns[designKey] || {};
+        printArea.classList.add(getReceiptStyleClass());
+        const styleMatch = String(designKey || '').match(/style-(\d+)$/);
+        if (styleMatch) printArea.classList.add('receipt-style-' + Math.max(1, Math.min(5, Number(styleMatch[1]))));
+        printArea.style.setProperty('--custom-receipt-bg', cfg.bg || '#fff');
+        printArea.style.setProperty('--custom-receipt-border', cfg.border || '#111');
+        printArea.dataset.designKey = designKey || '';
+        return cfg;
+    }
+
+    function applySavedReceiptLayout(printArea, cfg) {
+        const layout=cfg?.layout; const shape=printArea.querySelector('.receipt-shape');
+        if (!layout || !shape) return;
+        shape.style.setProperty('position','absolute','important');
+        shape.style.setProperty('left',Number(layout.x||0)+'mm','important');
+        shape.style.setProperty('top',Number(layout.y||5)+'mm','important');
+        shape.style.setProperty('width',Number(layout.width||148)+'mm','important');
+        shape.style.setProperty('height',Number(layout.height||210)+'mm','important');
+        shape.style.setProperty('min-height',Number(layout.height||210)+'mm','important');
+        shape.style.setProperty('max-height',Number(layout.height||210)+'mm','important');
+        shape.style.setProperty('transform','rotate('+Number(layout.rotation||0)+'deg)','important');
+        shape.style.setProperty('transform-origin','center center','important');
+        shape.style.setProperty('margin','0','important');
+        shape.style.setProperty('overflow','hidden','important');
+    }
+
+    function applyDesignElementsToPrintedReceipt(printArea, cfg, values) {
+        if (!cfg || !Array.isArray(cfg.data?.elements)) return;
+        const defaultElements = getDefaultReceiptDesign().elements;
+        if (JSON.stringify(cfg.data.elements) === JSON.stringify(defaultElements)) return;
+        const shape = printArea.querySelector('.receipt-shape'); if (!shape) return;
+        const layer = document.createElement('div'); layer.className='saved-design-elements'; layer.style.cssText='position:absolute;inset:0;pointer-events:none;z-index:5;';
+        const esc = v => String(v ?? '').replace(/[<>&"]/g,c=>({'<':'&lt;','>':'&gt;','&':'&amp;','"':'&quot;'}[c]));
+        cfg.data.elements.forEach(el=>{
+            const item=document.createElement('div'); item.style.cssText=`position:absolute;left:${Number(el.x||0)}px;top:${Number(el.y||0)}px;z-index:6;`;
+            if(el.type==='image') item.innerHTML=`<img src="${appLogoUrl}" style="width:${Number(el.width||60)}px;height:${Number(el.height||60)}px;object-fit:contain">`;
+            else if(el.type==='barcode') { item.innerHTML=`<div class="saved-design-qr"></div>`; setTimeout(()=>{const q=item.querySelector('.saved-design-qr');if(q&&window.QRCode)new QRCode(q,{text:String(values.code||'0'),width:Number(el.width||72),height:Number(el.height||72),correctLevel:QRCode.CorrectLevel.M});},10); }
+            else { let text=String(el.text||'').replace(/\{\{seq\}\}/g,esc(values.seq)).replace(/\{\{name\}\}/g,esc(values.name)).replace(/\{\{phone\}\}/g,esc(values.phone)).replace(/\{\{device\}\}/g,esc(values.device)).replace(/\{\{paid\}\}/g,esc(money(values.paid))).replace(/\{\{remaining\}\}/g,esc(money(values.rem))); item.innerHTML=esc(text); item.style.fontSize=(Number(el.size||12))+'pt'; item.style.fontWeight=el.weight||'normal'; item.style.whiteSpace='nowrap'; }
+            layer.appendChild(item);
+        });
+        shape.appendChild(layer);
+    }
+
     function printA5ReceiptDirect(name, phone, paid, rem, seq, device = 'تسديد حساب', transactionType = 'تسديد', transactionDateValue = new Date()) {
         let printArea = document.getElementById("printArea");
         const receiptKind = transactionType === 'تسديد' ? 'receipt' : (String(transactionType).includes('دين') ? 'debt' : (String(transactionType).includes('ضمان') ? 'warranty' : 'add'));
-        if(window.applyKindReceiptSize) applyKindReceiptSize(receiptKind);
-        const styleNumber = Math.max(1, Math.min(5, parseInt(String(localStorage.getItem('walid_receipt_template')||'style-1').replace('style-','')) - (localStorage.getItem('walid_receipt_size')==='A4'?0:localStorage.getItem('walid_receipt_size')==='A6'?10:5) || 1));
-        activeDesignKey = getDesignerKey(localStorage.getItem('walid_receipt_size')||'A5', styleNumber, receiptKind);
-        printArea.className = "receipt-template custom-design";
+        const selectedKind = getSavedKindSelection(receiptKind);
+        localStorage.setItem('walid_receipt_size', selectedKind.size);
+        localStorage.setItem('walid_receipt_template', 'style-' + (selectedKind.size==='A4' ? selectedKind.style : selectedKind.size==='A6' ? Number(selectedKind.style)+10 : Number(selectedKind.style)+5));
+        const styleNumber = Math.max(1, Math.min(4, Number(selectedKind.style||1)));
+        activeDesignKey = getDesignerKey(selectedKind.size, styleNumber, receiptKind);
+        printArea.className = "receipt-template custom-design " + getReceiptStyleClass();
         const receiptShapeClass = prepareReceiptPageFrame(printArea, getReceiptShapeNumber());
-        const printCfg = receiptDesigns[activeDesignKey] || receiptDesigns[getDesignerKey(localStorage.getItem('walid_receipt_size')||'A5',styleNumber,'add')] || {}; printArea.style.setProperty('--custom-receipt-bg', printCfg.bg || '#fff'); printArea.style.setProperty('--custom-receipt-border', printCfg.border || '#111');
+        const printCfg = applySavedReceiptDesign(printArea, activeDesignKey) || {};
         const dateText = formatDate(transactionDateValue);
         const safe = v => String(v ?? '').replace(/[<>&"]/g, c => ({'<':'&lt;','>':'&gt;','&':'&amp;','"':'&quot;'}[c]));
         const matchedDebt = [...phonesDebts, ...devicesDebts].find(d => d.name === name && d.deviceType === device && (d.phone || '') === (phone || ''));
-        const downText = matchedDebt ? Number(matchedDebt.downPayment || 0).toLocaleString() : '0';
-        const monthlyText = matchedDebt ? Number(matchedDebt.monthlyPayment || 0).toLocaleString() : '0';
+        const downText = matchedDebt ? money(matchedDebt.downPayment) : '0';
+        const monthlyText = matchedDebt ? money(matchedDebt.monthlyPayment) : '0';
         const installmentsText = matchedDebt ? (matchedDebt.installmentsRequired || '—') : '—';
         const code = String(Date.now());
         const receiptTitle = receiptKind === 'receipt' ? 'وصل استلام / تسديد' : receiptKind === 'debt' ? 'وصل دين' : receiptKind === 'warranty' ? 'وصل ضمان' : 'وصل إضافة زبون';
-        window.walidReceiptCodes = JSON.parse(localStorage.getItem('walid_receipt_codes') || '{}'); window.walidReceiptCodes[code] = {name, type:receiptTitle, amount:Number(paid||0).toLocaleString(), remaining:Number(rem||0).toLocaleString()}; localStorage.setItem('walid_receipt_codes', JSON.stringify(window.walidReceiptCodes));
+        window.walidReceiptCodes = JSON.parse(localStorage.getItem('walid_receipt_codes') || '{}'); window.walidReceiptCodes[code] = {name, type:receiptTitle, amount:money(paid), remaining:money(rem)}; localStorage.setItem('walid_receipt_codes', JSON.stringify(window.walidReceiptCodes));
         const isPayment = receiptKind === 'receipt';
         const receiptContent = isPayment ? `
-            <div class="receipt-columns"><div><div class="receipt-row"><b>اسم الشخص</b><span>${safe(name)}</span></div><div class="receipt-row"><b>المبلغ المستلم</b><strong>${Number(paid||0).toLocaleString()} د.ع</strong></div></div><div><div class="receipt-row"><b>المبلغ المتبقي</b><strong>${Number(rem||0).toLocaleString()} د.ع</strong></div><div class="receipt-row"><b>التاريخ والوقت</b><span>${formatDateTime(transactionDateValue)}</span></div></div></div>
+            <div class="receipt-columns"><div><div class="receipt-row"><b>اسم الشخص</b><span>${safe(name)}</span></div><div class="receipt-row"><b>المبلغ المستلم</b><strong>${money(paid)} د.ع</strong></div></div><div><div class="receipt-row"><b>المبلغ المتبقي</b><strong>${money(rem)} د.ع</strong></div><div class="receipt-row"><b>التاريخ والوقت</b><span>${formatDateTime(transactionDateValue)}</span></div></div></div>
             <div class="receipt-box"></div>` : `
-            <div class="receipt-columns"><div><div class="receipt-row"><b>اسم الشخص</b><span>${safe(name)}</span></div><div class="receipt-row"><b>نوع الجهاز</b><span>${safe(device)}</span></div><div class="receipt-row"><b>سعر التقسيط الكلي</b><strong>${matchedDebt ? Number(matchedDebt.totalAmount||0).toLocaleString() : Number(rem||0).toLocaleString()} د.ع</strong></div></div><div><div class="receipt-row"><b>المقدمة</b><span>${downText} د.ع</span></div><div class="receipt-row"><b>الدفع كل شهر</b><span>${monthlyText} د.ع</span></div><div class="receipt-row"><b>التاريخ والوقت</b><span>${formatDateTime(transactionDateValue)}</span></div></div></div>
-            <div class="receipt-box"><div class="receipt-row"><b>المبلغ المتبقي بعد المقدمة</b><strong>${Number(rem||0).toLocaleString()} د.ع</strong></div></div>`;
+            <div class="receipt-columns"><div><div class="receipt-row"><b>اسم الشخص</b><span>${safe(name)}</span></div><div class="receipt-row"><b>نوع الجهاز</b><span>${safe(device)}</span></div><div class="receipt-row"><b>سعر التقسيط الكلي</b><strong>${matchedDebt ? money(matchedDebt.totalAmount) : money(rem)} د.ع</strong></div></div><div><div class="receipt-row"><b>المقدمة</b><span>${downText} د.ع</span></div><div class="receipt-row"><b>الدفع كل شهر</b><span>${monthlyText} د.ع</span></div><div class="receipt-row"><b>التاريخ والوقت</b><span>${formatDateTime(transactionDateValue)}</span></div></div></div>
+            <div class="receipt-box"><div class="receipt-row"><b>المبلغ المتبقي بعد المقدمة</b><strong>${money(rem)} د.ع</strong></div></div>`;
         printArea.innerHTML = `<div class="${receiptShapeClass}">
             <div class="receipt-head"><div><h1 style="font-size:20px;font-weight:900;margin:0">محل وليد</h1><p style="margin:4px 0;font-size:11px">${receiptTitle}</p></div><img class="receipt-logo" src="${appLogoUrl}" alt="اللوغو"></div>
             ${receiptContent}
             <div class="receipt-barcode ${showReceiptBarcode?'':'barcode-disabled'}"><div id="receiptSquareBarcode" style="display:inline-block"></div><div style="font-size:10px;margin-top:3px;font-weight:bold">كود الوصل: ${code}</div></div><p style="text-align:center;font-size:11px;margin-top:12px">شكراً لتعاملكم معنا</p><p class="receipt-disclaimer">كل وصل غير مختوم يعد باطل ولا نتحمل المسؤولية</p></div>`;
+        applySavedReceiptLayout(printArea, printCfg);
+        applyDesignElementsToPrintedReceipt(printArea, printCfg, {name,phone,seq,device,paid,rem,code});
         setTimeout(() => {
             if (showReceiptBarcode && document.getElementById('receiptSquareBarcode')) new QRCode(document.getElementById('receiptSquareBarcode'), { text: code, width: 120, height: 120, correctLevel: QRCode.CorrectLevel.M });
             applyReceiptPrintSize();
@@ -1492,11 +1647,11 @@
         const last = rows[0];
         const operationDate = last ? transactionDate(last.date) : transactionDate(customer.createdAt);
         const printArea = document.getElementById('printArea');
-        if(window.applyKindReceiptSize) applyKindReceiptSize('history');
-        printArea.className = 'receipt-template history-print-full'; const receiptShapeClass = prepareReceiptPageFrame(printArea, getReceiptShapeNumber());
+        const historySelection=getSavedKindSelection('history'); localStorage.setItem('walid_receipt_size', historySelection.size); localStorage.setItem('walid_receipt_template', 'style-' + (historySelection.size==='A4' ? historySelection.style : historySelection.size==='A6' ? Number(historySelection.style)+10 : Number(historySelection.style)+5));
+        printArea.className = 'receipt-template history-print-full receipt-style-' + historySelection.style; const receiptShapeClass = prepareReceiptPageFrame(printArea, getReceiptShapeNumber());
         printArea.innerHTML = `<div class="${receiptShapeClass}"><div class="receipt-head"><div><h1 style="font-size:20px;font-weight:900;margin:0">محل وليد</h1><p style="margin:4px 0;font-size:11px">تفاصيل السجل</p><p style="font-size:10px;font-weight:bold">كود الوصل: #HISTORY-${Date.now()}</p></div><img class="receipt-logo" src="${appLogoUrl}"></div>
-        <div class="receipt-box" style="margin-top:0"><h2 style="font-size:15px;font-weight:900;margin:0 0 8px">معلومات السجل</h2><div class="receipt-row"><b>اسم العميل</b><span>${customer.name}</span></div><div class="receipt-row"><b>الدين الكلي</b><strong>${totalDebt.toLocaleString()} د.ع</strong></div><div class="receipt-row"><b>التسديد الكلي</b><strong>${paid.toLocaleString()} د.ع</strong></div><div class="receipt-row"><b>المبلغ المتبقي</b><strong>${remaining.toLocaleString()} د.ع</strong></div><div class="receipt-row"><b>تاريخ العملية</b><span>${operationDate.toLocaleDateString('en-CA')}</span></div><div class="receipt-row"><b>الوقت</b><span>${operationDate.toLocaleTimeString('ar-IQ',{hour:'2-digit',minute:'2-digit'})}</span></div></div>
-        <div class="receipt-box"><h2 style="font-size:15px;font-weight:900;margin:0 0 8px">جدول التسديد</h2><table style="width:100%;border-collapse:collapse;font-size:11px"><thead><tr style="background:#e5e7eb"><th style="border:1px solid #222;padding:6px">التاريخ</th><th style="border:1px solid #222;padding:6px">التسديد</th><th style="border:1px solid #222;padding:6px">الدين</th><th style="border:1px solid #222;padding:6px">ملاحظات</th></tr></thead><tbody>${rows.map(h=>{const paid=h.type==='تسديد';return `<tr><td style="border:1px solid #222;padding:6px;background:${paid?'#dcfce7':'#fee2e2'}">${transactionDate(h.date).toLocaleDateString('en-CA')}</td><td style="border:1px solid #222;padding:6px">${paid?Number(h.amount||0).toLocaleString()+' د.ع':''}</td><td style="border:1px solid #222;padding:6px">${!paid?Number(h.amount||0).toLocaleString()+' د.ع':''}</td><td style="border:1px solid #222;padding:6px">${h.note||''}</td></tr>`}).join('')}</tbody></table><p class="receipt-disclaimer">كل وصل غير مختوم يعد باطل ولا نتحمل المسؤولية</p></div></div>`;
+        <div class="receipt-box" style="margin-top:0"><h2 style="font-size:15px;font-weight:900;margin:0 0 8px">معلومات السجل</h2><div class="receipt-row"><b>اسم العميل</b><span>${customer.name}</span></div><div class="receipt-row"><b>الدين الكلي</b><strong>${money(totalDebt)} د.ع</strong></div><div class="receipt-row"><b>التسديد الكلي</b><strong>${money(paid)} د.ع</strong></div><div class="receipt-row"><b>المبلغ المتبقي</b><strong>${money(remaining)} د.ع</strong></div><div class="receipt-row"><b>تاريخ العملية</b><span>${operationDate.toLocaleDateString('en-CA')}</span></div><div class="receipt-row"><b>الوقت</b><span>${operationDate.toLocaleTimeString('ar-IQ',{hour:'2-digit',minute:'2-digit'})}</span></div></div>
+        <div class="receipt-box"><h2 style="font-size:15px;font-weight:900;margin:0 0 8px">جدول التسديد</h2><table style="width:100%;border-collapse:collapse;font-size:11px"><thead><tr style="background:#e5e7eb"><th style="border:1px solid #222;padding:6px">التاريخ</th><th style="border:1px solid #222;padding:6px">التسديد</th><th style="border:1px solid #222;padding:6px">الدين</th><th style="border:1px solid #222;padding:6px">ملاحظات</th></tr></thead><tbody>${rows.map(h=>{const paid=h.type==='تسديد';return `<tr><td style="border:1px solid #222;padding:6px;background:${paid?'#dcfce7':'#fee2e2'}">${transactionDate(h.date).toLocaleDateString('en-CA')}</td><td style="border:1px solid #222;padding:6px">${paid?money(h.amount)+' د.ع':''}</td><td style="border:1px solid #222;padding:6px">${!paid?money(h.amount)+' د.ع':''}</td><td style="border:1px solid #222;padding:6px">${h.note||''}</td></tr>`}).join('')}</tbody></table><p class="receipt-disclaimer">كل وصل غير مختوم يعد باطل ولا نتحمل المسؤولية</p></div></div>`;
         setTimeout(() => { applyReceiptPrintSize(); window.print(); setTimeout(() => { printArea.innerHTML=''; printArea.className='hidden'; }, 800); }, 250);
     }
 
@@ -1665,8 +1820,8 @@
                     <span class="text-xs bg-slate-100 text-slate-700 px-2 py-0.5 rounded">${p.category}</span>
                     <p class="text-xs text-gray-500 mt-2">الكمية بالمخزن: <strong class="text-blue-600">${p.quantity}</strong></p>
                     <div class="mt-3 space-y-1 text-xs">
-                        <p class="font-bold text-green-600">سعر النقد: ${(p.saleCash||0).toLocaleString()} د.ع</p>
-                        <p class="font-bold text-purple-600">سعر القسط: ${(p.saleInstallment||0).toLocaleString()} د.ع</p>
+                        <p class="font-bold text-green-600">سعر النقد: ${money(p.saleCash)} د.ع</p>
+                        <p class="font-bold text-purple-600">سعر القسط: ${money(p.saleInstallment)} د.ع</p>
                     </div>
                 </div>
                 <div class="mt-4 space-y-2">
@@ -1852,7 +2007,7 @@
                     <input type="checkbox" class="barcode-check w-4 h-4" value="${idx}">
                     <span>${p.name} (${p.category})</span>
                 </label>
-                <div class="text-gray-500">نقد: ${(p.saleCash||0).toLocaleString()} | قسط: ${(p.saleInstallment||0).toLocaleString()}</div>
+                <div class="text-gray-500">نقد: ${money(p.saleCash)} | قسط: ${money(p.saleInstallment)}</div>
             `;
             container.appendChild(div);
         });
@@ -1950,8 +2105,8 @@
                 <td class="p-2">${p.category}</td>
                 <td class="p-2">${p.type}</td>
                 <td class="p-2 font-bold text-blue-600">${p.quantity}</td>
-                <td class="p-2 font-bold text-green-600">${(p.saleCash||0).toLocaleString()} د.ع</td>
-                <td class="p-2 font-bold text-purple-600">${(p.saleInstallment||0).toLocaleString()} د.ع</td>
+                <td class="p-2 font-bold text-green-600">${money(p.saleCash)} د.ع</td>
+                <td class="p-2 font-bold text-purple-600">${money(p.saleInstallment)} د.ع</td>
                 <td class="p-2">
                     <button onclick="inventory.splice(${i},1); saveAllData(); renderInventoryTable();" class="btn-danger p-1 px-2 rounded text-xs"><i class="fas fa-trash"></i></button>
                 </td>
@@ -2048,9 +2203,9 @@
         const paidCount = allDebts.filter(d=>d.remaining<=0).length;
         const unpaidCount = allDebts.filter(d=>d.remaining>0).length;
         const lateCount = allDebts.filter(d=>d.remaining>0 && overdueMonths(d)>0).length;
-        document.getElementById("statTotalSales").textContent = totalSales.toLocaleString() + " د.ع";
-        document.getElementById("statTotalPaid").textContent = totalPaid.toLocaleString() + " د.ع";
-        document.getElementById("statTotalRemaining").textContent = totalRemaining.toLocaleString() + " د.ع";
+        document.getElementById("statTotalSales").textContent = money(totalSales) + " د.ع";
+        document.getElementById("statTotalPaid").textContent = money(totalPaid) + " د.ع";
+        document.getElementById("statTotalRemaining").textContent = money(totalRemaining) + " د.ع";
         document.getElementById("statPaidCount").textContent = paidCount;
         document.getElementById("statUnpaidCount").textContent = unpaidCount;
         document.getElementById("statLateCount").textContent = lateCount;
@@ -2058,7 +2213,7 @@
         const cat = document.getElementById('statsCategoryFilter')?.value || 'all';
         const status = document.getElementById('statsStatusFilter')?.value || 'all';
         const filtered = allDebts.filter(d => (cat==='all'||d.section===cat) && (status==='all' || (status==='paid'&&d.remaining<=0) || (status==='unpaid'&&d.remaining>0) || (status==='late'&&d.remaining>0&&overdueMonths(d)>0)));
-        document.getElementById('monthlyCustomersContainer').innerHTML = filtered.length ? filtered.map(d=>`<div class="border rounded-xl p-3 flex flex-wrap justify-between gap-2 text-sm"><div><b>${d.name}</b> <span class="text-xs text-slate-500">${d.section==='phones'?'موبايلات':'أجهزة كهربائية'} - ${d.deviceType}</span><div class="text-xs text-slate-500">التاريخ: ${formatDate(d.createdAt)} | التسلسل: ${d.seq||'---'}</div></div><div class="text-left"><div class="font-bold ${d.remaining<=0?'text-green-600':'text-red-600'}">${d.remaining<=0?'مسدد بالكامل':'متبقي: '+Number(d.remaining).toLocaleString()+' د.ع'}</div><div class="text-xs ${overdueMonths(d)>0?'text-rose-600':'text-slate-500'}">${d.remaining>0 ? (overdueMonths(d)>0 ? `متأخر ${overdueMonths(d)} شهر` : 'غير متأخر') : 'تم التسديد'}</div></div></div>`).join('') : '<p class="text-center text-slate-400 py-6 font-bold">لا توجد نتائج بهذا الفرز</p>';
+        document.getElementById('monthlyCustomersContainer').innerHTML = filtered.length ? filtered.map(d=>`<div class="border rounded-xl p-3 flex flex-wrap justify-between gap-2 text-sm"><div><b>${d.name}</b> <span class="text-xs text-slate-500">${d.section==='phones'?'موبايلات':'أجهزة كهربائية'} - ${d.deviceType}</span><div class="text-xs text-slate-500">التاريخ: ${formatDate(d.createdAt)} | التسلسل: ${d.seq||'---'}</div></div><div class="text-left"><div class="font-bold ${d.remaining<=0?'text-green-600':'text-red-600'}">${d.remaining<=0?'مسدد بالكامل':'متبقي: '+money(d.remaining)+' د.ع'}</div><div class="text-xs ${overdueMonths(d)>0?'text-rose-600':'text-slate-500'}">${d.remaining>0 ? (overdueMonths(d)>0 ? `متأخر ${overdueMonths(d)} شهر` : 'غير متأخر') : 'تم التسديد'}</div></div></div>`).join('') : '<p class="text-center text-slate-400 py-6 font-bold">لا توجد نتائج بهذا الفرز</p>';
     }
 
     // -------------------------------------------------------------------------
@@ -2097,7 +2252,7 @@
         const matches = all.filter(d => (name && String(d.name||'').toLowerCase() === name) || (phone && d.phone === phone));
         const remaining = matches.reduce((sum,d) => sum + Number(d.remaining||0), 0);
         const el = document.getElementById(isPhone ? 'phonePreviousDebt' : 'devicePreviousDebt');
-        if (el) el.textContent = remaining > 0 ? `تنبيه: على هذا الزبون دين سابق متبقي ${remaining.toLocaleString()} د.ع` : '';
+        if (el) el.textContent = remaining > 0 ? `تنبيه: على هذا الزبون دين سابق متبقي ${money(remaining)} د.ع` : '';
     }
 
     function exportFilteredReportPdf(sectionType) {
@@ -2120,12 +2275,12 @@
         };
         const customers=Object.values(grouped).filter(match).sort((a,b)=>String(a.name).localeCompare(String(b.name),'ar'));
         const safe=v=>String(v??'').replace(/[<>&"]/g,c=>({'<':'&lt;','>':'&gt;','&':'&amp;','"':'&quot;'}[c]));
-        const money=v=>Number(v||0).toLocaleString()+' د.ع';
+        const moneyReport=v=>money(v)+' د.ع';
         const rows=customers.map(c=>{
             const total=c.items.reduce((x,d)=>x+Number(d.totalAmount||0),0), rem=c.items.reduce((x,d)=>x+Number(d.remaining||0),0);
             const devices=c.items.map(d=>safe(d.deviceType)).join('، ');
             const histories=paymentHistory.filter(h=>(h.customerKey === ('person:'+String(c.name||'').trim().toLowerCase()+'|'+String(c.seq||'').trim()) || (h.customerName===c.name && String(h.seq)===String(c.seq))) && c.items.some(d=>d.deviceType===h.device)).sort(newestFirst);
-            return `<section class="pdf-customer-card" style="border:1px solid #222;padding:8mm"><h2 style="margin:0 0 8px;font-size:18px">${safe(c.name)}</h2><div style="display:grid;grid-template-columns:1fr 1fr;gap:5px;font-size:12px"><b>التسلسل: ${safe(c.seq)}</b><b>الهاتف: ${safe(c.phone||'بدون هاتف')}</b><b>الأجهزة: ${devices}</b><b>الدين الكلي: ${money(total)}</b><b>المتبقي: ${money(rem)}</b></div><table style="width:100%;border-collapse:collapse;margin-top:10px;font-size:10px"><thead><tr><th style="border:1px solid #222;padding:4px">التاريخ</th><th style="border:1px solid #222;padding:4px">التسديد</th><th style="border:1px solid #222;padding:4px">الدين</th><th style="border:1px solid #222;padding:4px">ملاحظات</th></tr></thead><tbody>${histories.map(h=>{const paid=h.type==='تسديد';return `<tr><td style="border:1px solid #222;padding:4px;background:${paid?'#dcfce7':'#fee2e2'}">${transactionDate(h.date).toLocaleDateString('en-CA')}</td><td style="border:1px solid #222;padding:4px">${paid?money(h.amount):''}</td><td style="border:1px solid #222;padding:4px">${!paid?money(h.amount):''}</td><td style="border:1px solid #222;padding:4px">${safe(h.note||'')}</td></tr>`}).join('')}</tbody></table></section>`;
+            return `<section class="pdf-customer-card" style="border:1px solid #222;padding:8mm"><h2 style="margin:0 0 8px;font-size:18px">${safe(c.name)}</h2><div style="display:grid;grid-template-columns:1fr 1fr;gap:5px;font-size:12px"><b>التسلسل: ${safe(c.seq)}</b><b>الهاتف: ${safe(c.phone||'بدون هاتف')}</b><b>الأجهزة: ${devices}</b><b>الدين الكلي: ${moneyReport(total)}</b><b>المتبقي: ${moneyReport(rem)}</b></div><table style="width:100%;border-collapse:collapse;margin-top:10px;font-size:10px"><thead><tr><th style="border:1px solid #222;padding:4px">التاريخ</th><th style="border:1px solid #222;padding:4px">التسديد</th><th style="border:1px solid #222;padding:4px">الدين</th><th style="border:1px solid #222;padding:4px">ملاحظات</th></tr></thead><tbody>${histories.map(h=>{const paid=h.type==='تسديد';return `<tr><td style="border:1px solid #222;padding:4px;background:${paid?'#dcfce7':'#fee2e2'}">${transactionDate(h.date).toLocaleDateString('en-CA')}</td><td style="border:1px solid #222;padding:4px">${paid?moneyReport(h.amount):''}</td><td style="border:1px solid #222;padding:4px">${!paid?moneyReport(h.amount):''}</td><td style="border:1px solid #222;padding:4px">${safe(h.note||'')}</td></tr>`}).join('')}</tbody></table></section>`;
         }).join('');
         const area=document.getElementById('printArea'); area.className='report-pdf'; area.innerHTML=`<h1 style="text-align:center;margin:0 0 5px">تقرير السجلات والوصولات</h1><p style="text-align:center;font-size:11px">القسم: ${isPhone?'الموبايلات':'الأجهزة الكهربائية'} | البحث: ${safe(query||'الكل')} | تاريخ التقرير: ${new Date().toLocaleString('ar-IQ')}</p>${rows || '<p style="text-align:center;padding:30px">لا توجد سجلات مطابقة للبحث</p>'}<p class="receipt-disclaimer">كل وصل غير مختوم يعد باطل ولا نتحمل المسؤولية</p>`;
         const style=document.createElement('style'); style.textContent='@media print { @page { size: A4 portrait; margin: 0; } }'; style.id='pdfReportPageStyle'; document.head.appendChild(style);
@@ -2140,10 +2295,10 @@
         ['phoneDebtDate','deviceDebtDate'].forEach(id => { const el=document.getElementById(id); if(el && !el.value) el.value=todayInputValue(); });
         setupLogoUpload();
         const templateSelect = document.getElementById('receiptTemplateSelect');
-        if (templateSelect) templateSelect.onchange = e => localStorage.setItem('walid_receipt_template', e.target.value);
+        if (templateSelect) templateSelect.onchange = e => { localStorage.setItem('walid_receipt_template', e.target.value); const d=document.getElementById('designerModal'); if(d && !d.classList.contains('hidden')) { refreshDesignerTemplateSelect(); loadDesignerSelection(); } };
         const themeSelect = document.getElementById('themeSelect'); if (themeSelect) { const th=localStorage.getItem('walid_theme')||'official'; themeSelect.value=th; document.body.className='p-2 md:p-6 theme-'+th; themeSelect.onchange=e=>{ localStorage.setItem('walid_theme',e.target.value); document.body.className='p-2 md:p-6 theme-'+e.target.value; }; }
         const paperSizeSelect = document.getElementById('receiptPaperSizeSelect');
-        if (paperSizeSelect) paperSizeSelect.onchange = e => { localStorage.setItem('walid_receipt_size', e.target.value); refreshTemplateOptions(); applyReceiptPrintSize(); };
+        if (paperSizeSelect) paperSizeSelect.onchange = e => { const size=e.target.value; localStorage.setItem('walid_receipt_size', size); const prefs=JSON.parse(localStorage.getItem('walid_receipt_kind_sizes')||'{}'); ['add','receipt','debt','history','warranty','report'].forEach(k=>prefs[k]=size); localStorage.setItem('walid_receipt_kind_sizes',JSON.stringify(prefs)); refreshTemplateOptions(); applyReceiptPrintSize(); const d=document.getElementById('designerModal'); if(d && !d.classList.contains('hidden')) { document.getElementById('designerSizeSelect').value=size; refreshDesignerTemplateSelect(); loadDesignerSelection(); } };
         const barcodeToggle=document.getElementById('showReceiptBarcodeToggle');
         if (barcodeToggle) { barcodeToggle.checked=showReceiptBarcode; barcodeToggle.onchange=()=>{ showReceiptBarcode=barcodeToggle.checked; saveAllData(); renderReceiptDesigner(); }; }
         const verifyModal=document.getElementById('barcodeVerifyModal'), verifyResult=document.getElementById('barcodeVerifyResult'), video=document.getElementById('barcodeCameraVideo');
@@ -2253,4 +2408,3 @@
 </script>
 </body>
 </html>
-
