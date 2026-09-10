@@ -1308,6 +1308,7 @@
     // 8. تسديد الديون وطباعة وصل A5 دقيق
     // -------------------------------------------------------------------------
     function transactionDate(value) { return value ? new Date(value) : new Date(); }
+    function newestFirst(a,b) { return transactionDate(b.date||b.createdAt)-transactionDate(a.date||a.createdAt) || Number(b.id||0)-Number(a.id||0); }
     function formatDate(value) { return transactionDate(value).toLocaleDateString('ar-IQ'); }
     function overdueMonths(debt) {
         if (!debt || debt.remaining <= 0) return 0;
@@ -1317,10 +1318,11 @@
     function recalculateDebtFromHistory(item) {
         const key = recordKey(item);
         const rows = paymentHistory.filter(h => (h.customerKey === key || (h.customerName === item.name && String(h.seq) === String(item.seq))) && h.device === item.deviceType);
-        const hasIntro = rows.some(h => h.type === 'مقدمة');
+        const hasIntro = rows.some(h => h.type === 'مقدمة' || h.subType === 'مقدمة');
         const paidRows = rows.filter(h => h.type === 'تسديد' || h.type === 'مقدمة');
         const paid = paidRows.reduce((sum,h)=>sum+Number(h.amount||0),0) + (!hasIntro ? Number(item.downPayment||0) : 0);
         item.remaining = Math.max(0, Number(item.totalAmount||0) - paid);
+        item.installmentsRemaining = Number(item.monthlyPayment||0) > 0 ? Math.ceil(item.remaining / Number(item.monthlyPayment)) : 0;
         rows.forEach(h=>{ h.remaining=item.remaining; });
         return item.remaining;
     }
@@ -1483,11 +1485,11 @@
         const customerItems = all.filter(d => recordKey(d) === customerKey);
         const customer = customerItems[0]; if (!customer) return;
         const deviceSet = new Set(customerItems.map(d => d.deviceType));
-        const rows = paymentHistory.filter(h => (h.customerKey === recordKey(customer) || (h.customerName === customer.name && String(h.seq) === String(customer.seq))) && deviceSet.has(h.device)).sort((a,b)=>transactionDate(b.date)-transactionDate(a.date));
+        const rows = paymentHistory.filter(h => (h.customerKey === recordKey(customer) || (h.customerName === customer.name && String(h.seq) === String(customer.seq))) && deviceSet.has(h.device)).sort(newestFirst);
         const totalDebt = customerItems.reduce((sum,d)=>sum+Number(d.totalAmount||0),0);
         const remaining = customerItems.reduce((sum,d)=>sum+Number(d.remaining||0),0);
         const paid = Math.max(0,totalDebt-remaining);
-        const last = rows[rows.length-1];
+        const last = rows[0];
         const operationDate = last ? transactionDate(last.date) : transactionDate(customer.createdAt);
         const printArea = document.getElementById('printArea');
         if(window.applyKindReceiptSize) applyKindReceiptSize('history');
@@ -1536,6 +1538,11 @@
             if (d) h.date = new Date(d+'T00:00:00').toISOString();
             h.monthYear = monthKey(h.date);
         });
+        items.forEach(item => {
+            const intro = paymentHistory.find(h => (h.customerKey === item.customerKey || (h.customerName===item.name && String(h.seq)===String(item.seq))) && h.device === item.deviceType && (h.subType === 'مقدمة' || h.type === 'مقدمة'));
+            if (intro) { intro.type='تسديد'; intro.subType='مقدمة'; intro.amount=Number(item.downPayment||0); intro.remaining=item.remaining; }
+            else if (Number(item.downPayment||0) > 0) paymentHistory.push({id:Date.now()+Math.random(),type:'تسديد',subType:'مقدمة',customerPhone:item.phone,customerKey:item.customerKey,customerName:item.name,seq:item.seq,device:item.deviceType,amount:Number(item.downPayment),remaining:0,date:item.createdAt||new Date().toISOString(),monthYear:monthKey(item.createdAt||new Date().toISOString())});
+        });
         recalculateCustomerFromHistory(items);
         saveAllData(); renderAllModules(); modal.remove(); alert('تم حفظ تعديل الاسم والتسلسل والهاتف والأجهزة والمبالغ وجدول الدفعات بنجاح.');
     }
@@ -1554,6 +1561,7 @@
                     <label class="font-bold">سعر التقسيط<input data-item-field="totalAmount" value="${item.totalAmount||0}" class="w-full border rounded p-1.5 mt-1"></label>
                     <label class="font-bold">المقدمة<input data-item-field="downPayment" value="${item.downPayment||0}" class="w-full border rounded p-1.5 mt-1"></label>
                     <label class="font-bold">القسط الشهري<input data-item-field="monthlyPayment" value="${item.monthlyPayment||0}" class="w-full border rounded p-1.5 mt-1"></label>
+                    <label class="font-bold">الأقساط المتبقية<input value="${item.installmentsRemaining ?? (item.monthlyPayment ? Math.ceil((item.remaining||0)/item.monthlyPayment) : 0)}" readonly class="w-full border rounded p-1.5 mt-1 bg-slate-100"></label>
                     
                     <label class="font-bold">المتبقي<input data-item-field="remaining" value="${item.remaining||0}" class="w-full border rounded p-1.5 mt-1"></label>
                 </div>
@@ -1561,7 +1569,7 @@
             </div>
         `).join('');
 
-        let historyHtml = custHistory.sort((a,b) => transactionDate(b.date) - transactionDate(a.date)).map(h => {
+        let historyHtml = custHistory.sort(newestFirst).map(h => {
             const isPaid = h.type === 'تسديد' || h.type === 'مقدمة' || (h.type !== 'دين' && Number(h.remaining||0) < Number(h.amount||0));
             return `<tr class="border-b text-xs" data-history-id="${h.id}">
                 <td class="p-1"><input data-history-field="date" type="date" value="${String(h.date||'').slice(0,10)}" class="border rounded p-1 ${isPaid?'bg-green-100 border-green-500':'bg-red-100 border-red-500'}"></td>
@@ -1631,7 +1639,7 @@
             deviceType: name,
             totalAmount: total,
             remaining: total,
-            monthlyPayment: monthly, installmentsRequired: monthly ? Math.ceil(total/monthly) : 0, createdAt: new Date().toISOString(), customerKey: cust.customerKey
+            monthlyPayment: monthly, installmentsRequired: monthly ? Math.ceil(total/monthly) : 0, installmentsRemaining: monthly ? Math.ceil(total/monthly) : 0, createdAt: new Date().toISOString(), customerKey: cust.customerKey
         };
 
         phonesDebts.push(newObj);
@@ -1983,7 +1991,7 @@
         if(!seq || !name || !device || isNaN(total) || total <= 0) { alert('يرجى إكمال الاسم والتسلسل والجهاز وسعر التقسيط'); return; }
         if(down < 0 || down > total) { alert('المقدمة يجب ألا تتجاوز سعر التقسيط'); return; }
         const balance=total-down;
-        const debtObj={ id:Date.now()+Math.random(), seq,name,phone,deviceType:device,totalAmount:total,downPayment:down,remaining:balance,monthlyPayment:monthly,installmentsRequired:installments || (monthly ? Math.ceil(balance/monthly) : 0),createdAt:new Date(dateValue+'T00:00:00').toISOString(),customerKey:'person:'+String(name).trim().toLowerCase()+'|'+String(seq).trim() };
+        const debtObj={ id:Date.now()+Math.random(), seq,name,phone,deviceType:device,totalAmount:total,downPayment:down,remaining:balance,monthlyPayment:monthly,installmentsRequired:installments || (monthly ? Math.ceil(balance/monthly) : 0),installmentsRemaining:monthly ? Math.ceil(balance/monthly) : 0,createdAt:new Date(dateValue+'T00:00:00').toISOString(),customerKey:'person:'+String(name).trim().toLowerCase()+'|'+String(seq).trim() };
         if(isPhone) phonesDebts.push(debtObj); else devicesDebts.push(debtObj);
         addDebtTransaction(debtObj); if(down>0) paymentHistory.push({id:Date.now()+Math.random(),type:'تسديد',subType:'مقدمة',customerPhone:phone,customerKey:debtObj.customerKey,customerName:name,seq,device,amount:down,remaining:balance,date:new Date(dateValue+'T00:00:00').toISOString(),monthYear:monthKey(dateValue)});
         recalculateDebtFromHistory(debtObj);
@@ -2016,6 +2024,10 @@
         if ([total, remaining].some(v => isNaN(v) || v < 0) || remaining > total || down > total) { alert('تحقق من المبالغ: المتبقي لا يمكن أن يكون أكبر من المبلغ الكلي.'); return; }
         debt.phone = document.getElementById('editCustomerPhone').value.trim();
         debt.totalAmount = total; debt.monthlyPayment = monthly; debt.remaining = remaining; debt.downPayment = down; debt.customerKey = 'person:'+String(debt.name).trim().toLowerCase()+'|'+String(debt.seq).trim();
+        const intro = paymentHistory.find(h => h.customerKey === debt.customerKey && h.device === debt.deviceType && (h.subType === 'مقدمة' || h.type === 'مقدمة'));
+        if (intro) { intro.type='تسديد'; intro.subType='مقدمة'; intro.amount=down; }
+        else if (down > 0) paymentHistory.push({id:Date.now()+Math.random(),type:'تسديد',subType:'مقدمة',customerPhone:debt.phone,customerKey:debt.customerKey,customerName:debt.name,seq:debt.seq,device:debt.deviceType,amount:down,remaining:0,date:debt.createdAt||new Date().toISOString(),monthYear:monthKey(debt.createdAt||new Date().toISOString())});
+        recalculateDebtFromHistory(debt);
         const date = document.getElementById('editDebtDate').value;
         if (date) debt.createdAt = new Date(date + 'T00:00:00').toISOString();
         paymentHistory.push({ id: Date.now()+Math.random(), type: 'تعديل', customerPhone: debt.phone, customerKey: personKey(debt), customerName: debt.name, seq: debt.seq, device: debt.deviceType, amount: 0, remaining: debt.remaining, date: new Date().toISOString(), monthYear: new Date().toISOString().slice(0,7) });
@@ -2112,7 +2124,7 @@
         const rows=customers.map(c=>{
             const total=c.items.reduce((x,d)=>x+Number(d.totalAmount||0),0), rem=c.items.reduce((x,d)=>x+Number(d.remaining||0),0);
             const devices=c.items.map(d=>safe(d.deviceType)).join('، ');
-            const histories=paymentHistory.filter(h=>(h.customerKey === ('person:'+String(c.name||'').trim().toLowerCase()+'|'+String(c.seq||'').trim()) || (h.customerName===c.name && String(h.seq)===String(c.seq))) && c.items.some(d=>d.deviceType===h.device)).sort((a,b)=>transactionDate(b.date)-transactionDate(a.date));
+            const histories=paymentHistory.filter(h=>(h.customerKey === ('person:'+String(c.name||'').trim().toLowerCase()+'|'+String(c.seq||'').trim()) || (h.customerName===c.name && String(h.seq)===String(c.seq))) && c.items.some(d=>d.deviceType===h.device)).sort(newestFirst);
             return `<section class="pdf-customer-card" style="border:1px solid #222;padding:8mm"><h2 style="margin:0 0 8px;font-size:18px">${safe(c.name)}</h2><div style="display:grid;grid-template-columns:1fr 1fr;gap:5px;font-size:12px"><b>التسلسل: ${safe(c.seq)}</b><b>الهاتف: ${safe(c.phone||'بدون هاتف')}</b><b>الأجهزة: ${devices}</b><b>الدين الكلي: ${money(total)}</b><b>المتبقي: ${money(rem)}</b></div><table style="width:100%;border-collapse:collapse;margin-top:10px;font-size:10px"><thead><tr><th style="border:1px solid #222;padding:4px">التاريخ</th><th style="border:1px solid #222;padding:4px">التسديد</th><th style="border:1px solid #222;padding:4px">الدين</th><th style="border:1px solid #222;padding:4px">ملاحظات</th></tr></thead><tbody>${histories.map(h=>{const paid=h.type==='تسديد';return `<tr><td style="border:1px solid #222;padding:4px;background:${paid?'#dcfce7':'#fee2e2'}">${transactionDate(h.date).toLocaleDateString('en-CA')}</td><td style="border:1px solid #222;padding:4px">${paid?money(h.amount):''}</td><td style="border:1px solid #222;padding:4px">${!paid?money(h.amount):''}</td><td style="border:1px solid #222;padding:4px">${safe(h.note||'')}</td></tr>`}).join('')}</tbody></table></section>`;
         }).join('');
         const area=document.getElementById('printArea'); area.className='report-pdf'; area.innerHTML=`<h1 style="text-align:center;margin:0 0 5px">تقرير السجلات والوصولات</h1><p style="text-align:center;font-size:11px">القسم: ${isPhone?'الموبايلات':'الأجهزة الكهربائية'} | البحث: ${safe(query||'الكل')} | تاريخ التقرير: ${new Date().toLocaleString('ar-IQ')}</p>${rows || '<p style="text-align:center;padding:30px">لا توجد سجلات مطابقة للبحث</p>'}<p class="receipt-disclaimer">كل وصل غير مختوم يعد باطل ولا نتحمل المسؤولية</p>`;
