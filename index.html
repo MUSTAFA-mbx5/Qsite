@@ -132,8 +132,7 @@
             #printArea.receipt-page-frame.receipt-layout-a6 .receipt-shape { width:92% !important; height:88% !important; max-width:none !important; max-height:88% !important; min-height:0 !important; margin:4mm auto 0 !important; padding:4mm !important; }
             #printArea.receipt-page-frame .receipt-shape { overflow:hidden !important; page-break-after:avoid !important; page-break-inside:avoid !important; break-inside:avoid !important; }
         }
-        #autoAddZerosToggle { display:none !important; }
-        #autoAddZerosToggle + span { display:none !important; }
+        
 
         body.theme-dark { background:#111827 !important; color:#e5e7eb; }
         body.theme-dark .bg-white { background:#1f2937 !important; color:#f3f4f6 !important; border-color:#374151 !important; }
@@ -558,11 +557,11 @@
                 </div>
             </div>
 
-            <div class="border-b pb-4 hidden">
-                <h3 class="text-lg font-bold mb-2"><i class="fas fa-calculator text-blue-600"></i> إدخال المبالغ تلقائياً</h3>
+            <div class="border-b pb-4">
+                <h3 class="text-lg font-bold mb-2"><i class="fas fa-calculator text-blue-600"></i> إضافة ثلاثة أصفار تلقائياً</h3>
                 <label class="flex items-center gap-3 cursor-pointer">
                     <input type="checkbox" id="autoAddZerosToggle" class="w-5 h-5 text-blue-600 rounded">
-                    <span class="font-bold text-gray-700">إضافة ثلاثة أصفار تلقائيًا للمبالغ (مثال: إدخال "10" يصبح "10,000")</span>
+                    <span class="font-bold text-gray-700">إضافة ثلاثة أصفار تلقائيًا عند كتابة مبلغ (يمكن إيقافها)</span>
                 </label>
             </div>
 
@@ -883,7 +882,7 @@
 
     function loadAllData() {
         systemPin = localStorage.getItem("walid_system_pin") || "2001";
-        autoAddZeros = false; localStorage.setItem("walid_auto_zeros", "false");
+        autoAddZeros = JSON.parse(localStorage.getItem("walid_auto_zeros") || "false");
         phonesDebts = JSON.parse(localStorage.getItem("walid_phones_debts")) || [];
         devicesDebts = JSON.parse(localStorage.getItem("walid_devices_debts")) || [];
         inventory = JSON.parse(localStorage.getItem("walid_inventory")) || [];
@@ -1305,6 +1304,18 @@
         const start = transactionDate(debt.createdAt || debt.date || Date.now());
         return Math.max(0, Math.floor((Date.now() - start.getTime()) / (30 * 24 * 60 * 60 * 1000)));
     }
+    function recalculateDebtFromHistory(item) {
+        const key = recordKey(item);
+        const rows = paymentHistory.filter(h => (h.customerKey === key || (h.customerName === item.name && String(h.seq) === String(item.seq))) && h.device === item.deviceType);
+        const hasIntro = rows.some(h => h.type === 'مقدمة');
+        const paidRows = rows.filter(h => h.type === 'تسديد' || h.type === 'مقدمة');
+        const paid = paidRows.reduce((sum,h)=>sum+Number(h.amount||0),0) + (!hasIntro ? Number(item.downPayment||0) : 0);
+        item.remaining = Math.max(0, Number(item.totalAmount||0) - paid);
+        rows.forEach(h=>{ h.remaining=item.remaining; });
+        return item.remaining;
+    }
+    function recalculateCustomerFromHistory(items) { (items||[]).forEach(recalculateDebtFromHistory); }
+
     function addDebtTransaction(debt) {
         paymentHistory.push({ id: Date.now() + Math.random(), type: 'دين', customerPhone: debt.phone, customerKey: personKey(debt), customerName: debt.name, seq: debt.seq, device: debt.deviceType, amount: debt.totalAmount, remaining: debt.remaining, date: new Date().toISOString(), monthYear: new Date().toISOString().slice(0,7) });
     }
@@ -1482,6 +1493,7 @@
         const items = all.filter(d => recordKey(d) === customerKey);
         if (!items.length) return;
         const oldInfo = items.map(d => ({phone:d.phone || '', device:d.deviceType, name:d.name}));
+        const oldPersonKeys = new Set(items.map(x=>personKey(x)));
         const seq = modal.querySelector('#detailSeq').value.trim();
         const name = modal.querySelector('#detailName').value.trim();
         const phone = modal.querySelector('#detailPhone').value.trim();
@@ -1500,7 +1512,7 @@
             }
             item.customerKey = 'person:' + String(name).trim().toLowerCase() + '|' + String(seq).trim();
         });
-        const oldSet = new Set(oldInfo.map(x => x.phone+'|'+x.device)); const oldPersonKeys = new Set(items.map(x=>personKey(x)));
+        const oldSet = new Set(oldInfo.map(x => x.phone+'|'+x.device));
         paymentHistory.forEach(h => { if (oldSet.has((h.customerPhone||'')+'|'+h.device) || oldPersonKeys.has(h.customerKey)) { h.customerPhone=phone; h.customerName=name; h.seq=seq; h.customerKey='person:'+String(name).trim().toLowerCase()+'|'+String(seq).trim(); } });
         modal.querySelectorAll('[data-history-id]').forEach(row => {
             const h = paymentHistory.find(x => String(x.id) === String(row.dataset.historyId));
@@ -1508,12 +1520,13 @@
             const paid = Number(row.querySelector('[data-history-field="paid"]').value.replace(/,/g,'')) || 0;
             const debt = Number(row.querySelector('[data-history-field="debt"]').value.replace(/,/g,'')) || 0;
             h.amount = paid > 0 ? paid : debt;
-            h.type = paid > 0 ? 'تسديد' : 'دين';
+            h.type = paid > 0 ? 'تسديد' : 'دين'; if (h.type !== 'تسديد') delete h.subType;
             h.note = row.querySelector('[data-history-field="note"]').value.trim();
             const d = row.querySelector('[data-history-field="date"]').value;
             if (d) h.date = new Date(d+'T00:00:00').toISOString();
             h.monthYear = monthKey(h.date);
         });
+        recalculateCustomerFromHistory(items);
         saveAllData(); renderAllModules(); modal.remove(); alert('تم حفظ تعديل الاسم والتسلسل والهاتف والأجهزة والمبالغ وجدول الدفعات بنجاح.');
     }
 
@@ -1539,7 +1552,7 @@
         `).join('');
 
         let historyHtml = custHistory.sort((a,b) => transactionDate(b.date) - transactionDate(a.date)).map(h => {
-            const isPaid = h.type === 'تسديد' || (h.type !== 'دين' && Number(h.remaining||0) < Number(h.amount||0));
+            const isPaid = h.type === 'تسديد' || h.type === 'مقدمة' || (h.type !== 'دين' && Number(h.remaining||0) < Number(h.amount||0));
             return `<tr class="border-b text-xs" data-history-id="${h.id}">
                 <td class="p-1"><input data-history-field="date" type="date" value="${String(h.date||'').slice(0,10)}" class="border rounded p-1 ${isPaid?'bg-green-100 border-green-500':'bg-red-100 border-red-500'}"></td>
                 <td class="p-1"><input data-history-field="paid" value="${isPaid?Number(h.amount||0):0}" class="w-24 border rounded p-1"></td>
@@ -1962,7 +1975,8 @@
         const balance=total-down;
         const debtObj={ id:Date.now()+Math.random(), seq,name,phone,deviceType:device,totalAmount:total,downPayment:down,remaining:balance,monthlyPayment:monthly,installmentsRequired:installments || (monthly ? Math.ceil(balance/monthly) : 0),createdAt:new Date(dateValue+'T00:00:00').toISOString(),customerKey:'person:'+String(name).trim().toLowerCase()+'|'+String(seq).trim() };
         if(isPhone) phonesDebts.push(debtObj); else devicesDebts.push(debtObj);
-        addDebtTransaction(debtObj); if(down>0) paymentHistory.push({id:Date.now()+Math.random(),type:'مقدمة',customerPhone:phone,customerName:name,seq,device,amount:down,remaining:balance,date:new Date(dateValue+'T00:00:00').toISOString(),monthYear:monthKey(dateValue)});
+        addDebtTransaction(debtObj); if(down>0) paymentHistory.push({id:Date.now()+Math.random(),type:'تسديد',subType:'مقدمة',customerPhone:phone,customerKey:debtObj.customerKey,customerName:name,seq,device,amount:down,remaining:balance,date:new Date(dateValue+'T00:00:00').toISOString(),monthYear:monthKey(dateValue)});
+        recalculateDebtFromHistory(debtObj);
         saveAllData(); renderAllModules();
         if(shouldPrint) printA5ReceiptDirect(name,phone,down,balance,seq,device,'دين - مع مقدمة',new Date(dateValue+'T00:00:00'));
         clearCustomerForm(sectionType); alert(shouldPrint?'تم الحفظ والطباعة وتفريغ الحقول بنجاح!':'تم الحفظ وتفريغ الحقول بنجاح!');
