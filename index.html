@@ -1013,7 +1013,11 @@
     }
     function normalizeMoneyInput(input) {
         if (!input || !input.value) return;
-        input.value = normalizeArabicDigits(input.value);
+        let value = normalizeArabicDigits(input.value).replace(/\s/g, '');
+        // ١.٢٠٠.٠٠٠ / 1.200.000 / 1،200،000 are grouped dinar amounts, not decimals.
+        if (/^\d{1,3}(?:[.]\d{3})+$/.test(value)) value = value.replace(/[.]/g, ',');
+        if (/^\d{1,3}(?:[،]\d{3})+$/.test(value)) value = value.replace(/[،]/g, ',');
+        input.value = value;
     }
     function normalizeArabicDigits(value) {
         return String(value ?? '')
@@ -1024,7 +1028,11 @@
     }
     function normalizeMoneyInput(input) {
         if (!input || !input.value) return;
-        input.value = normalizeArabicDigits(input.value);
+        let value = normalizeArabicDigits(input.value).replace(/\s/g, '');
+        // ١.٢٠٠.٠٠٠ / 1.200.000 / 1،200،000 are grouped dinar amounts, not decimals.
+        if (/^\d{1,3}(?:[.]\d{3})+$/.test(value)) value = value.replace(/[.]/g, ',');
+        if (/^\d{1,3}(?:[،]\d{3})+$/.test(value)) value = value.replace(/[،]/g, ',');
+        input.value = value;
     }
     function setupPriceInputsAutoZeros() {
         const toggle = document.getElementById("autoAddZerosToggle");
@@ -1035,10 +1043,12 @@
             input.addEventListener('blur', function() {
                 normalizeMoneyInput(this);
                 if (!autoAddZeros || !this.value) return;
-                const val = this.value.replace(/,/g, '').trim();
+                const rawValue = this.value.trim();
+                const hasGrouping = /[,.،٬]/.test(rawValue);
+                const val = rawValue.replace(/[,.]/g, '').trim();
                 const num = Number(val);
                 // الإدخال المختصر بالدينار: 1200 تصبح 1,200,000 عند تفعيل الخيار.
-                if (Number.isFinite(num) && num > 0 && num < 1000000) {
+                if (!hasGrouping && Number.isFinite(num) && num > 0 && num < 1000000) {
                     this.value = Math.round(num * 1000).toLocaleString('en-US');
                 } else if (Number.isFinite(num)) {
                     this.value = num.toLocaleString('en-US');
@@ -1504,10 +1514,10 @@
             if (box) {
                 const val = key => box.querySelector(`[data-item-field="${key}"]`).value;
                 item.deviceType = val('deviceType').trim();
-                item.totalAmount = Number(val('totalAmount').replace(/,/g,'')) || 0;
-                item.downPayment = Number(val('downPayment').replace(/,/g,'')) || 0;
-                item.monthlyPayment = Number(val('monthlyPayment').replace(/,/g,'')) || 0;
-                item.remaining = Number(val('remaining').replace(/,/g,'')) || 0;
+                item.totalAmount = Number(val('totalAmount').replace(/[,.]/g,'')) || 0;
+                item.downPayment = Number(val('downPayment').replace(/[,.]/g,'')) || 0;
+                item.monthlyPayment = Number(val('monthlyPayment').replace(/[,.]/g,'')) || 0;
+                item.remaining = Number(val('remaining').replace(/[,.]/g,'')) || 0;
                 if (item.remaining > item.totalAmount || item.downPayment > item.totalAmount) throw new Error('المبالغ غير صحيحة');
             }
             item.customerKey = 'person:' + String(name).trim().toLowerCase() + '|' + String(seq).trim();
@@ -1517,8 +1527,8 @@
         modal.querySelectorAll('[data-history-id]').forEach(row => {
             const h = paymentHistory.find(x => String(x.id) === String(row.dataset.historyId));
             if (!h) return;
-            const paid = Number(row.querySelector('[data-history-field="paid"]').value.replace(/,/g,'')) || 0;
-            const debt = Number(row.querySelector('[data-history-field="debt"]').value.replace(/,/g,'')) || 0;
+            const paid = Number(row.querySelector('[data-history-field="paid"]').value.replace(/[,.]/g,'')) || 0;
+            const debt = Number(row.querySelector('[data-history-field="debt"]').value.replace(/[,.]/g,'')) || 0;
             h.amount = paid > 0 ? paid : debt;
             h.type = paid > 0 ? 'تسديد' : 'دين'; if (h.type !== 'تسديد') delete h.subType;
             h.note = row.querySelector('[data-history-field="note"]').value.trim();
@@ -1945,9 +1955,9 @@
     function updateInstallmentPreview(sectionType) {
         const isPhone = sectionType === 'phones';
         const prefix = isPhone ? 'phone' : 'device';
-        const total = parseFloat(document.getElementById(prefix+'TotalAmount').value.replace(/,/g,'')) || 0;
-        const down = parseFloat(document.getElementById(prefix+'DownPayment').value.replace(/,/g,'')) || 0;
-        const monthly = parseFloat(document.getElementById(prefix+'Monthly').value.replace(/,/g,'')) || 0;
+        const total = parseFloat(document.getElementById(prefix+'TotalAmount').value.replace(/[,.]/g,'')) || 0;
+        const down = parseFloat(document.getElementById(prefix+'DownPayment').value.replace(/[,.]/g,'')) || 0;
+        const monthly = parseFloat(document.getElementById(prefix+'Monthly').value.replace(/[,.]/g,'')) || 0;
         const field = document.getElementById(prefix+'Installments');
         if (field) field.value = monthly > 0 ? Math.ceil(Math.max(0,total-down)/monthly) : '';
     }
@@ -1965,9 +1975,9 @@
         const id = x => document.getElementById(isPhone ? 'phone'+x : 'device'+x);
         const seq=id('Seq').value.trim(), name=id('Name').value.trim(), phone=id('CustomerPhone').value.trim();
         const device=id(isPhone ? 'Type' : 'TypeName').value.trim();
-        const total=parseFloat(id('TotalAmount').value.replace(/,/g,''));
-        const monthly=parseFloat(id('Monthly').value.replace(/,/g,'')) || 0;
-        const down=parseFloat(id('DownPayment').value.replace(/,/g,'')) || 0;
+        const total=parseFloat(id('TotalAmount').value.replace(/[,.]/g,''));
+        const monthly=parseFloat(id('Monthly').value.replace(/[,.]/g,'')) || 0;
+        const down=parseFloat(id('DownPayment').value.replace(/[,.]/g,'')) || 0;
         const installments=monthly > 0 ? Math.ceil(Math.max(0, total-down) / monthly) : 0;
         const dateValue=id('DebtDate').value || todayInputValue();
         if(!seq || !name || !device || isNaN(total) || total <= 0) { alert('يرجى إكمال الاسم والتسلسل والجهاز وسعر التقسيط'); return; }
@@ -1999,10 +2009,10 @@
         const id = document.getElementById('editDebtId').value;
         const debt = [...phonesDebts, ...devicesDebts].find(d => String(d.id) === String(id));
         if (!debt) return;
-        const total = parseFloat(document.getElementById('editTotalAmount').value.replace(/,/g,''));
-        const monthly = parseFloat(document.getElementById('editMonthlyAmount').value.replace(/,/g,'')) || 0;
-        const remaining = parseFloat(document.getElementById('editRemainingAmount').value.replace(/,/g,''));
-        const down = parseFloat(document.getElementById('editDownPayment').value.replace(/,/g,'')) || 0;
+        const total = parseFloat(document.getElementById('editTotalAmount').value.replace(/[,.]/g,''));
+        const monthly = parseFloat(document.getElementById('editMonthlyAmount').value.replace(/[,.]/g,'')) || 0;
+        const remaining = parseFloat(document.getElementById('editRemainingAmount').value.replace(/[,.]/g,''));
+        const down = parseFloat(document.getElementById('editDownPayment').value.replace(/[,.]/g,'')) || 0;
         if ([total, remaining].some(v => isNaN(v) || v < 0) || remaining > total || down > total) { alert('تحقق من المبالغ: المتبقي لا يمكن أن يكون أكبر من المبلغ الكلي.'); return; }
         debt.phone = document.getElementById('editCustomerPhone').value.trim();
         debt.totalAmount = total; debt.monthlyPayment = monthly; debt.remaining = remaining; debt.downPayment = down; debt.customerKey = 'person:'+String(debt.name).trim().toLowerCase()+'|'+String(debt.seq).trim();
@@ -2231,3 +2241,4 @@
 </script>
 </body>
 </html>
+
