@@ -8,6 +8,7 @@
     <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/jsbarcode@3.11.5/dist/JsBarcode.all.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/jsqr@1.4.0/dist/jsQR.js"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
         :root {
@@ -246,6 +247,14 @@
   #printArea.receipt-page-frame.receipt-layout-a6 .receipt-shape{width:94%!important;height:90%!important;min-height:0!important;max-height:90%!important;margin:3mm auto 0!important;padding:3mm!important;overflow:hidden!important;}
   #printArea.receipt-page-frame .receipt-shape{page-break-after:avoid!important;page-break-inside:avoid!important;break-inside:avoid!important;}
 }
+
+        @media print {
+          #printArea.receipt-page-frame.receipt-layout-a4{width:210mm!important;height:297mm!important;min-height:297mm!important;max-height:297mm!important;align-items:flex-start!important;justify-content:flex-start!important;}
+          #printArea.receipt-page-frame.receipt-layout-a5{width:148mm!important;height:210mm!important;min-height:210mm!important;max-height:210mm!important;align-items:flex-start!important;justify-content:flex-start!important;}
+          #printArea.receipt-page-frame.receipt-layout-a6{width:105mm!important;height:148mm!important;min-height:148mm!important;max-height:148mm!important;display:flex!important;flex-direction:column!important;align-items:flex-start!important;justify-content:flex-start!important;}
+          #printArea.receipt-page-frame .receipt-shape{margin:0!important; width:100%!important;max-width:none!important;min-height:0!important;max-height:100%!important;box-sizing:border-box!important;page-break-inside:avoid!important;break-inside:avoid!important;overflow:hidden!important;}
+          #printArea.receipt-page-frame.receipt-layout-a6 .receipt-shape{height:100%!important;padding:3mm!important;}
+        }
 </style>
 </head>
 <body class="p-2 md:p-6 theme-official">
@@ -845,6 +854,14 @@
     let currentAddDevCustomerPhone = null;
 
     // -------------------------------------------------------------------------
+    function personKey(d) { return 'person:' + String(d.name||'').trim().toLowerCase() + '|' + String(d.seq||'').trim(); }
+    function recordKey(d) { return d.customerKey || personKey(d); }
+    function migratePersonKeys() {
+        const all=[...phonesDebts,...devicesDebts];
+        all.forEach(d=>{ d.customerKey=personKey(d); });
+        paymentHistory.forEach(h=>{ h.customerKey = h.customerKey || ('person:'+String(h.customerName||'').trim().toLowerCase()+'|'+String(h.seq||'').trim()); });
+    }
+
     // 2. تحميل وحفظ البيانات
     // -------------------------------------------------------------------------
     function saveAllData() {
@@ -884,7 +901,7 @@
         [...phonesDebts, ...devicesDebts].forEach(debt => {
             const exists = paymentHistory.some(h => h.type === 'دين' && h.customerPhone === debt.phone && h.device === debt.deviceType);
             if (!exists) {
-                paymentHistory.push({ id: 'legacy-debt-' + debt.id, type: 'دين', customerPhone: debt.phone, customerName: debt.name, seq: debt.seq, device: debt.deviceType, amount: debt.totalAmount, remaining: debt.remaining, date: debt.createdAt || new Date().toISOString(), monthYear: new Date(debt.createdAt || Date.now()).toISOString().slice(0,7) });
+                paymentHistory.push({ id: 'legacy-debt-' + debt.id, type: 'دين', customerPhone: debt.phone, customerKey: personKey(debt), customerName: debt.name, seq: debt.seq, device: debt.deviceType, amount: debt.totalAmount, remaining: debt.remaining, date: debt.createdAt || new Date().toISOString(), monthYear: new Date(debt.createdAt || Date.now()).toISOString().slice(0,7) });
             }
         });
 
@@ -1289,16 +1306,16 @@
         return Math.max(0, Math.floor((Date.now() - start.getTime()) / (30 * 24 * 60 * 60 * 1000)));
     }
     function addDebtTransaction(debt) {
-        paymentHistory.push({ id: Date.now() + Math.random(), type: 'دين', customerPhone: debt.phone, customerName: debt.name, seq: debt.seq, device: debt.deviceType, amount: debt.totalAmount, remaining: debt.remaining, date: new Date().toISOString(), monthYear: new Date().toISOString().slice(0,7) });
+        paymentHistory.push({ id: Date.now() + Math.random(), type: 'دين', customerPhone: debt.phone, customerKey: personKey(debt), customerName: debt.name, seq: debt.seq, device: debt.deviceType, amount: debt.totalAmount, remaining: debt.remaining, date: new Date().toISOString(), monthYear: new Date().toISOString().slice(0,7) });
     }
     function addPaymentTransaction(debt, amount, remaining) {
-        paymentHistory.push({ id: Date.now() + Math.random(), type: 'تسديد', customerPhone: debt.phone, customerName: debt.name, seq: debt.seq, device: debt.deviceType, amount, remaining, date: new Date().toISOString(), monthYear: new Date().toISOString().slice(0,7) });
+        paymentHistory.push({ id: Date.now() + Math.random(), type: 'تسديد', customerPhone: debt.phone, customerKey: personKey(debt), customerName: debt.name, seq: debt.seq, device: debt.deviceType, amount, remaining, date: new Date().toISOString(), monthYear: new Date().toISOString().slice(0,7) });
     }
 
     function openPaymentModal(phone) {
         currentPayCustomerPhone = phone;
         let all = [...phonesDebts, ...devicesDebts];
-        let custItems = all.filter(d => (d.customerKey || (d.phone ? 'phone:'+d.phone : 'record:'+d.name+'|'+d.seq)) === phone && d.remaining > 0);
+        let custItems = all.filter(d => recordKey(d) === phone && d.remaining > 0);
 
         if(custItems.length === 0) { alert("هذا الزبون ليس عليه أي ديون متأخرة!"); return; }
 
@@ -1324,7 +1341,7 @@
         if(isNaN(amt) || amt <= 0) return;
 
         let all = [...phonesDebts, ...devicesDebts];
-        let custItems = all.filter(d => (d.customerKey || (d.phone ? 'phone:'+d.phone : 'record:'+d.name+'|'+d.seq)) === currentPayCustomerPhone && d.remaining > 0);
+        let custItems = all.filter(d => recordKey(d) === currentPayCustomerPhone && d.remaining > 0);
         let selectedDevId = document.getElementById("payDeviceSelect").value;
 
         if(selectedDevId === 'all') {
@@ -1357,7 +1374,7 @@
     function formatDateTime(value) { return transactionDate(value).toLocaleString('ar-IQ', {year:'numeric', month:'2-digit', day:'2-digit', hour:'2-digit', minute:'2-digit', second:'2-digit'}); }
     function applyReceiptPrintSize() {
         const size = localStorage.getItem('walid_receipt_size') || 'A5';
-        const dims = { A4: ['210mm','297mm'], A5: ['210mm','148mm'], A6: ['148mm','105mm'] }[size] || ['210mm','148mm'];
+        const dims = { A4: ['210mm','297mm'], A5: ['148mm','210mm'], A6: ['105mm','148mm'] }[size] || ['210mm','148mm'];
         const area = document.getElementById('printArea');
         if (area) { area.style.setProperty('--receipt-page-height', dims[1]); area.style.width = dims[0]; area.style.height = dims[1]; }
         let style = document.getElementById('dynamicReceiptPageStyle');
@@ -1442,10 +1459,10 @@
 
     function printCustomerTransactionHistory(customerKey) {
         const all = [...phonesDebts, ...devicesDebts];
-        const customerItems = all.filter(d => (d.customerKey || (d.phone ? 'phone:'+d.phone : 'record:'+d.name+'|'+d.seq)) === customerKey);
+        const customerItems = all.filter(d => recordKey(d) === customerKey);
         const customer = customerItems[0]; if (!customer) return;
         const deviceSet = new Set(customerItems.map(d => d.deviceType));
-        const rows = paymentHistory.filter(h => h.customerPhone === (customer.phone || '') && deviceSet.has(h.device)).sort((a,b)=>transactionDate(b.date)-transactionDate(a.date));
+        const rows = paymentHistory.filter(h => (h.customerKey === recordKey(customer) || (h.customerName === customer.name && String(h.seq) === String(customer.seq))) && deviceSet.has(h.device)).sort((a,b)=>transactionDate(b.date)-transactionDate(a.date));
         const totalDebt = customerItems.reduce((sum,d)=>sum+Number(d.totalAmount||0),0);
         const remaining = customerItems.reduce((sum,d)=>sum+Number(d.remaining||0),0);
         const paid = Math.max(0,totalDebt-remaining);
@@ -1462,7 +1479,7 @@
 
     function saveCustomerDetailsEdits(customerKey, modal) {
         const all = [...phonesDebts, ...devicesDebts];
-        const items = all.filter(d => (d.customerKey || (d.phone ? 'phone:'+d.phone : 'record:'+d.name+'|'+d.seq)) === customerKey);
+        const items = all.filter(d => recordKey(d) === customerKey);
         if (!items.length) return;
         const oldInfo = items.map(d => ({phone:d.phone || '', device:d.deviceType, name:d.name}));
         const seq = modal.querySelector('#detailSeq').value.trim();
@@ -1481,10 +1498,10 @@
                 item.remaining = Number(val('remaining').replace(/,/g,'')) || 0;
                 if (item.remaining > item.totalAmount || item.downPayment > item.totalAmount) throw new Error('المبالغ غير صحيحة');
             }
-            item.customerKey = phone ? 'phone:'+phone : 'record:'+name+'|'+seq;
+            item.customerKey = 'person:' + String(name).trim().toLowerCase() + '|' + String(seq).trim();
         });
-        const oldSet = new Set(oldInfo.map(x => x.phone+'|'+x.device));
-        paymentHistory.forEach(h => { if (oldSet.has((h.customerPhone||'')+'|'+h.device)) { h.customerPhone=phone; h.customerName=name; h.seq=seq; } });
+        const oldSet = new Set(oldInfo.map(x => x.phone+'|'+x.device)); const oldPersonKeys = new Set(items.map(x=>personKey(x)));
+        paymentHistory.forEach(h => { if (oldSet.has((h.customerPhone||'')+'|'+h.device) || oldPersonKeys.has(h.customerKey)) { h.customerPhone=phone; h.customerName=name; h.seq=seq; h.customerKey='person:'+String(name).trim().toLowerCase()+'|'+String(seq).trim(); } });
         modal.querySelectorAll('[data-history-id]').forEach(row => {
             const h = paymentHistory.find(x => String(x.id) === String(row.dataset.historyId));
             if (!h) return;
@@ -1502,10 +1519,10 @@
 
     function openCustomerDetailsModal(phone) {
         let all = [...phonesDebts, ...devicesDebts];
-        let custItems = all.filter(d => (d.customerKey || (d.phone ? 'phone:'+d.phone : 'record:'+d.name+'|'+d.seq)) === phone);
+        let custItems = all.filter(d => recordKey(d) === phone);
         if(custItems.length === 0) return;
 
-        let custHistory = paymentHistory.filter(h => h.customerPhone === (custItems[0]?.phone || ''));
+        let custHistory = paymentHistory.filter(h => h.customerKey === recordKey(custItems[0]) || (h.customerName === custItems[0].name && String(h.seq) === String(custItems[0].seq))); 
 
         let itemsHtml = custItems.map(item => `
             <div class="border p-3 rounded-xl mb-2 bg-slate-50" data-detail-item="${item.id}">
@@ -1563,7 +1580,7 @@
     function openAddDeviceToCustModal(phone) {
         currentAddDevCustomerPhone = phone;
         let all = [...phonesDebts, ...devicesDebts];
-        let cust = all.find(d => (d.customerKey || (d.phone ? 'phone:'+d.phone : 'record:'+d.name+'|'+d.seq)) === phone);
+        let cust = all.find(d => recordKey(d) === phone);
         if(!cust) return;
 
         document.getElementById("addDevCustName").textContent = cust.name;
@@ -1581,7 +1598,7 @@
         let monthly = parseFloat((monthlyStr||"0").replace(/,/g, ''));
 
         let all = [...phonesDebts, ...devicesDebts];
-        let cust = all.find(d => (d.customerKey || (d.phone ? 'phone:'+d.phone : 'record:'+d.name+'|'+d.seq)) === currentAddDevCustomerPhone);
+        let cust = all.find(d => recordKey(d) === currentAddDevCustomerPhone);
 
         let newObj = {
             id: Date.now(),
@@ -1726,7 +1743,7 @@
         let uniquePhones = [...new Set(all.map(d=>d.phone))];
 
         uniquePhones.forEach(phone => {
-            let cust = all.find(d => (d.customerKey || (d.phone ? 'phone:'+d.phone : 'record:'+d.name+'|'+d.seq)) === phone);
+            let cust = all.find(d => recordKey(d) === phone);
             select.innerHTML += `<option value="${cust.phone}">${cust.name} (${cust.phone})</option>`;
         });
 
@@ -1943,7 +1960,7 @@
         if(!seq || !name || !device || isNaN(total) || total <= 0) { alert('يرجى إكمال الاسم والتسلسل والجهاز وسعر التقسيط'); return; }
         if(down < 0 || down > total) { alert('المقدمة يجب ألا تتجاوز سعر التقسيط'); return; }
         const balance=total-down;
-        const debtObj={ id:Date.now()+Math.random(), seq,name,phone,deviceType:device,totalAmount:total,downPayment:down,remaining:balance,monthlyPayment:monthly,installmentsRequired:installments || (monthly ? Math.ceil(balance/monthly) : 0),createdAt:new Date(dateValue+'T00:00:00').toISOString(),customerKey:phone?'phone:'+phone:'record:'+name+'|'+seq };
+        const debtObj={ id:Date.now()+Math.random(), seq,name,phone,deviceType:device,totalAmount:total,downPayment:down,remaining:balance,monthlyPayment:monthly,installmentsRequired:installments || (monthly ? Math.ceil(balance/monthly) : 0),createdAt:new Date(dateValue+'T00:00:00').toISOString(),customerKey:'person:'+String(name).trim().toLowerCase()+'|'+String(seq).trim() };
         if(isPhone) phonesDebts.push(debtObj); else devicesDebts.push(debtObj);
         addDebtTransaction(debtObj); if(down>0) paymentHistory.push({id:Date.now()+Math.random(),type:'مقدمة',customerPhone:phone,customerName:name,seq,device,amount:down,remaining:balance,date:new Date(dateValue+'T00:00:00').toISOString(),monthYear:monthKey(dateValue)});
         saveAllData(); renderAllModules();
@@ -1974,10 +1991,10 @@
         const down = parseFloat(document.getElementById('editDownPayment').value.replace(/,/g,'')) || 0;
         if ([total, remaining].some(v => isNaN(v) || v < 0) || remaining > total || down > total) { alert('تحقق من المبالغ: المتبقي لا يمكن أن يكون أكبر من المبلغ الكلي.'); return; }
         debt.phone = document.getElementById('editCustomerPhone').value.trim();
-        debt.totalAmount = total; debt.monthlyPayment = monthly; debt.remaining = remaining; debt.downPayment = down; debt.customerKey = debt.phone ? 'phone:'+debt.phone : 'record:'+debt.name+'|'+debt.seq;
+        debt.totalAmount = total; debt.monthlyPayment = monthly; debt.remaining = remaining; debt.downPayment = down; debt.customerKey = 'person:'+String(debt.name).trim().toLowerCase()+'|'+String(debt.seq).trim();
         const date = document.getElementById('editDebtDate').value;
         if (date) debt.createdAt = new Date(date + 'T00:00:00').toISOString();
-        paymentHistory.push({ id: Date.now()+Math.random(), type: 'تعديل', customerPhone: debt.phone, customerName: debt.name, seq: debt.seq, device: debt.deviceType, amount: 0, remaining: debt.remaining, date: new Date().toISOString(), monthYear: new Date().toISOString().slice(0,7) });
+        paymentHistory.push({ id: Date.now()+Math.random(), type: 'تعديل', customerPhone: debt.phone, customerKey: personKey(debt), customerName: debt.name, seq: debt.seq, device: debt.deviceType, amount: 0, remaining: debt.remaining, date: new Date().toISOString(), monthYear: new Date().toISOString().slice(0,7) });
         saveAllData(); renderAllModules(); document.getElementById('editCustomerModal').classList.add('hidden'); alert('تم تعديل بيانات الزبون بنجاح.');
     };
 
@@ -2071,7 +2088,7 @@
         const rows=customers.map(c=>{
             const total=c.items.reduce((x,d)=>x+Number(d.totalAmount||0),0), rem=c.items.reduce((x,d)=>x+Number(d.remaining||0),0);
             const devices=c.items.map(d=>safe(d.deviceType)).join('، ');
-            const histories=paymentHistory.filter(h=>h.customerPhone===(c.phone||'') && c.items.some(d=>d.deviceType===h.device)).sort((a,b)=>transactionDate(b.date)-transactionDate(a.date));
+            const histories=paymentHistory.filter(h=>(h.customerKey === ('person:'+String(c.name||'').trim().toLowerCase()+'|'+String(c.seq||'').trim()) || (h.customerName===c.name && String(h.seq)===String(c.seq))) && c.items.some(d=>d.deviceType===h.device)).sort((a,b)=>transactionDate(b.date)-transactionDate(a.date));
             return `<section class="pdf-customer-card" style="border:1px solid #222;padding:8mm"><h2 style="margin:0 0 8px;font-size:18px">${safe(c.name)}</h2><div style="display:grid;grid-template-columns:1fr 1fr;gap:5px;font-size:12px"><b>التسلسل: ${safe(c.seq)}</b><b>الهاتف: ${safe(c.phone||'بدون هاتف')}</b><b>الأجهزة: ${devices}</b><b>الدين الكلي: ${money(total)}</b><b>المتبقي: ${money(rem)}</b></div><table style="width:100%;border-collapse:collapse;margin-top:10px;font-size:10px"><thead><tr><th style="border:1px solid #222;padding:4px">التاريخ</th><th style="border:1px solid #222;padding:4px">التسديد</th><th style="border:1px solid #222;padding:4px">الدين</th><th style="border:1px solid #222;padding:4px">ملاحظات</th></tr></thead><tbody>${histories.map(h=>{const paid=h.type==='تسديد';return `<tr><td style="border:1px solid #222;padding:4px;background:${paid?'#dcfce7':'#fee2e2'}">${transactionDate(h.date).toLocaleDateString('en-CA')}</td><td style="border:1px solid #222;padding:4px">${paid?money(h.amount):''}</td><td style="border:1px solid #222;padding:4px">${!paid?money(h.amount):''}</td><td style="border:1px solid #222;padding:4px">${safe(h.note||'')}</td></tr>`}).join('')}</tbody></table></section>`;
         }).join('');
         const area=document.getElementById('printArea'); area.className='report-pdf'; area.innerHTML=`<h1 style="text-align:center;margin:0 0 5px">تقرير السجلات والوصولات</h1><p style="text-align:center;font-size:11px">القسم: ${isPhone?'الموبايلات':'الأجهزة الكهربائية'} | البحث: ${safe(query||'الكل')} | تاريخ التقرير: ${new Date().toLocaleString('ar-IQ')}</p>${rows || '<p style="text-align:center;padding:30px">لا توجد سجلات مطابقة للبحث</p>'}<p class="receipt-disclaimer">كل وصل غير مختوم يعد باطل ولا نتحمل المسؤولية</p>`;
@@ -2081,6 +2098,8 @@
 
     window.onload = function() {
         loadAllData();
+        migratePersonKeys();
+        saveAllData();
         const updateClock = () => { const el=document.getElementById('liveDateTime'); if(el) el.textContent = formatDateTime(new Date()); }; updateClock(); setInterval(updateClock, 1000);
         ['phoneDebtDate','deviceDebtDate'].forEach(id => { const el=document.getElementById(id); if(el && !el.value) el.value=todayInputValue(); });
         setupLogoUpload();
@@ -2095,7 +2114,7 @@
         document.getElementById('openBarcodeVerifyBtn').onclick=()=>{verifyModal.classList.remove('hidden'); verifyResult.innerHTML='';};
         document.getElementById('closeBarcodeVerifyBtn').onclick=()=>{verifyModal.classList.add('hidden'); if(barcodeCameraStream) barcodeCameraStream.getTracks().forEach(t=>t.stop());};
         document.getElementById('manualBarcodeBtn').onclick=()=>{video.classList.add('hidden'); document.getElementById('barcodeVerifyInput').focus();};
-        document.getElementById('startBarcodeCameraBtn').onclick=async()=>{ try { if(!('BarcodeDetector' in window)) throw Error('unsupported'); barcodeCameraStream=await navigator.mediaDevices.getUserMedia({video:{facingMode:'environment'}}); video.srcObject=barcodeCameraStream; video.classList.remove('hidden'); const detector=new BarcodeDetector(); const scan=async()=>{if(video.classList.contains('hidden'))return; const found=await detector.detect(video); if(found[0]){document.getElementById('barcodeVerifyInput').value=found[0].rawValue; document.getElementById('verifyBarcodeSubmitBtn').click(); return;} requestAnimationFrame(scan);}; scan(); } catch(e){ verifyResult.innerHTML='<p class="text-red-600 font-bold">الكاميرا غير متاحة، استخدم الإدخال اليدوي.</p>'; document.getElementById('barcodeVerifyInput').focus(); } };
+        document.getElementById('startBarcodeCameraBtn').onclick=async()=>{ try { barcodeCameraStream=await navigator.mediaDevices.getUserMedia({video:{facingMode:{ideal:'environment'}}}); video.srcObject=barcodeCameraStream; video.classList.remove('hidden'); verifyResult.innerHTML='<p class="text-blue-700 font-bold">وجّه الكاميرا إلى QR...</p>'; const canvas=document.createElement('canvas'),ctx=canvas.getContext('2d',{willReadFrequently:true}); const scan=async()=>{if(video.classList.contains('hidden')||!barcodeCameraStream)return; if(video.readyState>=2&&video.videoWidth){canvas.width=video.videoWidth;canvas.height=video.videoHeight;ctx.drawImage(video,0,0,canvas.width,canvas.height);let raw=null; if('BarcodeDetector' in window){try{const found=await new BarcodeDetector({formats:['qr_code']}).detect(video);if(found[0])raw=found[0].rawValue;}catch(e){}} if(!raw&&window.jsQR){const q=jsQR(ctx.getImageData(0,0,canvas.width,canvas.height).data,canvas.width,canvas.height);if(q)raw=q.data;} if(raw){document.getElementById('barcodeVerifyInput').value=raw.replace(/^#/, '');document.getElementById('verifyBarcodeSubmitBtn').click();return;}} requestAnimationFrame(scan);}; scan(); } catch(e){ verifyResult.innerHTML='<p class="text-red-600 font-bold">اسمح للمتصفح بالكاميرا أو استخدم الإدخال اليدوي.</p>'; document.getElementById('barcodeVerifyInput').focus(); } };
         document.getElementById('verifyBarcodeSubmitBtn').onclick=()=>{ const code=document.getElementById('barcodeVerifyInput').value.trim(); const valid=/^\d{6,}$/.test(code); const found=valid && (JSON.parse(localStorage.getItem('walid_receipt_codes') || '{}'))[code]; verifyResult.innerHTML=found?`<div class="text-green-700 bg-green-50 p-3 rounded-xl font-bold">تم التحقق من الوصل رقم ${code}<br>الاسم: ${found.name}<br>النوع: ${found.type}<br>المبلغ: ${found.amount} د.ع<br>المتبقي: ${found.remaining} د.ع</div>`:'<div class="barcode-fraud">⚠ تحذير تزوير<br><small>الباركود غير صالح أو غير معروف</small></div>'; };
         const receiptSizePrefs = JSON.parse(localStorage.getItem('walid_receipt_kind_sizes') || '{"add":"A5","receipt":"A5","debt":"A5","history":"A4","warranty":"A6","report":"A4"}');
         document.querySelectorAll('.receipt-kind-size').forEach(el=>{ const k=el.dataset.printKind; el.value=receiptSizePrefs[k]||el.value; el.onchange=()=>{ receiptSizePrefs[k]=el.value; localStorage.setItem('walid_receipt_kind_sizes',JSON.stringify(receiptSizePrefs)); }; });
@@ -2198,4 +2217,3 @@
 </script>
 </body>
 </html>
-
