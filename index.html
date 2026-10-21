@@ -1,0 +1,1876 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+    <title>نظام قساطي المتكامل - محل وليد</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/jsbarcode@3.11.5/dist/JsBarcode.all.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/jsqr@1.4.0/dist/jsQR.js"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        :root {
+            --primary-bg: #1e3a8a;
+            --card-bg: white;
+            --border-color: #e2e8f0;
+            --button-primary: #2563eb;
+            --button-success: #16a34a;
+            --button-danger: #dc2626;
+            --button-secondary: #475569;
+        }
+        body { 
+            background: #f1f5f9; 
+            font-family: 'Tajawal', system-ui, -apple-system, sans-serif; 
+            transition: all 0.3s ease; 
+            margin: 0;
+            padding: 0;
+            direction: rtl;
+        }
+        body.theme-dark { background: #0f172a; --card-bg: #1e293b; --border-color: #334155; color: #f8fafc; }
+        body.theme-dark .bg-white, body.theme-dark .bg-gray-50 { background-color: var(--card-bg) !important; color: #e2e8f0; }
+        body.theme-dark input, body.theme-dark select, body.theme-dark textarea { background-color: #0f172a !important; color: #ffffff !important; border-color: #475569 !important; }
+        
+        button, .btn-custom { transition: all 0.2s ease; font-weight: bold; box-shadow: 0 2px 4px rgba(0,0,0,0.08); }
+        button:hover { transform: translateY(-2px); filter: brightness(0.95); }
+        .btn-tab { border-radius: 9999px; border: 2px solid #cbd5e1; }
+        .btn-tab.active { background-color: var(--primary-bg); color: white; border-color: var(--primary-bg); }
+        .btn-action { border-radius: 0.75rem; padding: 0.5rem 1rem; font-size: 0.9rem; display: inline-flex; align-items: center; gap: 0.5rem; }
+        .btn-primary { background-color: var(--button-primary); color: white; }
+        .btn-success { background-color: var(--button-success); color: white; }
+        .btn-danger { background-color: var(--button-danger); color: white; }
+        .btn-purple { background-color: #9333ea; color: white; }
+        .btn-special { background-color: #f39c12; color: white; }
+        .card-btn { border-radius: 0.5rem; padding: 0.4rem 0.8rem; font-size: 0.75rem; display: inline-flex; align-items: center; gap: 0.3rem; border: 1px solid; }
+        
+        .loading-overlay {
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(15, 23, 42, 0.85); display: flex; flex-direction: column;
+            align-items: center; justify-content: center; z-index: 9999; backdrop-filter: blur(5px); color: white;
+        }
+
+        .a5-canvas-container {
+            width: 100%; max-width: 148mm; min-height: 210mm; background: white; color: black;
+            border: 2px dashed #94a3b8; position: relative; margin: 0 auto;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.15); font-family: 'Tajawal', sans-serif;
+            overflow: hidden; padding: 8mm; box-sizing: border-box; direction: rtl;
+        }
+        .designer-element {
+            position: absolute; cursor: move; user-select: none; border: 1px dashed transparent; padding: 2px 4px;
+            white-space: nowrap; word-break: break-word; line-height: 1.4;
+        }
+        .designer-element:hover, .designer-element.active { border-color: #2563eb; background: rgba(37, 99, 235, 0.08); }
+
+        .receipt-template { 
+            width: 100%; 
+            max-width: 148mm; 
+            min-height: auto; 
+            background: #fff; 
+            color: #111; 
+            padding: 8mm; 
+            box-sizing: border-box; 
+            font-family: 'Tajawal', sans-serif; 
+            direction: rtl; 
+            position: relative;
+            margin: 0 auto;
+        }
+        .receipt-template .receipt-head { display: flex; align-items: flex-start; justify-content: space-between; border-bottom: 2px solid #111; padding-bottom: 8px; margin-bottom: 10px; gap: 10px; }
+        .receipt-template .receipt-logo { width: 64px; height: 64px; object-fit: contain; flex-shrink: 0; }
+        .receipt-template .receipt-columns { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; border: 1px solid #222; padding: 8px; margin-bottom: 10px; background: rgba(255,255,255,0.95); }
+        .receipt-template .receipt-box { border: 1px solid #222; padding: 8px; margin-top: 8px; background: rgba(255,255,255,0.95); }
+        .receipt-template .receipt-row { display: flex; justify-content: space-between; align-items: center; gap: 8px; padding: 4px 0; border-bottom: 1px dashed #ccc; font-size: 13px; line-height: 1.3; }
+        .receipt-template .receipt-row:last-child { border-bottom: 0; }
+        .receipt-template .receipt-row span { word-break: break-word; }
+        .receipt-template .receipt-barcode { text-align: center; margin-top: 12px; }
+
+        .receipt-size-a4 { width: 210mm !important; max-width: 210mm !important; }
+        .receipt-size-a5 { width: 148mm !important; max-width: 148mm !important; }
+        .receipt-size-a6 { width: 105mm !important; max-width: 105mm !important; padding: 5mm !important; }
+        .receipt-size-a6 .receipt-logo { width: 45px; height: 45px; }
+        .receipt-size-a6 .receipt-row { font-size: 10.5px; padding: 2px 0; }
+        .receipt-cut-mark { display: none; }
+
+        .receipt-style-1 { border-top: 12px solid #1e3a8a; border-bottom: 4px solid #93c5fd; }
+        .receipt-style-2 { border: 3px solid #2563eb; border-radius: 12px; }
+        .receipt-style-3 { border: 4px double #111; outline: 1px solid #9ca3af; outline-offset: -6px; }
+        .receipt-style-4 { border-right: 10px solid #0891b2; border-left: 2px solid #67e8f9; background: #f0fdf4; }
+        .receipt-style-5 { border: 3px dashed #b45309; border-radius: 4px; background: #fffdf5; }
+
+        @media print {
+            @page { margin: 0 !important; size: A5 portrait; }
+            html.print-paper-a4 { page: receipt-a4; }
+            html.print-paper-a5 { page: receipt-a5; }
+            html.print-paper-a4 body { page: receipt-a4; }
+            html.print-paper-a5 body { page: receipt-a5; }
+            body.printing-list { page: receipt-a4 !important; }
+            #printArea.print-a4 { page: receipt-a4; }
+            #printArea.print-a5 { page: receipt-a5; }
+            #printArea.print-a6 { page: receipt-a4; }
+            html, body { background: #fff !important; margin: 0 !important; padding: 0 !important; width: 100% !important; direction: rtl !important; }
+            body * { visibility: hidden !important; }
+            #printArea, #printArea * { visibility: visible !important; }
+            #printArea { display: block !important; position: absolute !important; left: 0 !important; top: 0 !important; width: 100% !important; height: auto !important; background: white !important; }
+            #printArea .receipt-template { margin: 0 !important; position: relative !important; width: 148mm !important; max-width: 148mm !important; min-height: 0 !important; box-sizing: border-box !important; page-break-inside: avoid !important; break-inside: avoid !important; }
+            #printArea.print-a5 .receipt-template { width: 148mm !important; max-width: 148mm !important; min-height: 210mm !important; }
+            #printArea.print-a5 .receipt-cut-mark { display: block !important; position: absolute !important; left: 0; right: 0; bottom: 0; border-top: 1px dashed #555; text-align: center; font-size: 8pt; color: #555; }
+            #printArea.print-a6 { display: grid !important; grid-template-rows: repeat(3, 99mm) !important; align-content: start !important; width: 105mm !important; height: 297mm !important; }
+            #printArea.print-a6 .receipt-template { height: 99mm !important; min-height: 99mm !important; overflow: hidden !important; border-bottom: 1px dashed #777 !important; padding: 3mm !important; }
+            #printArea.print-a6 .receipt-template .receipt-columns { padding: 4px !important; gap: 4px !important; margin-bottom: 4px !important; }
+            #printArea.print-a6 .receipt-template .receipt-box { padding: 4px !important; margin-top: 4px !important; }
+            #printArea.print-a6 .receipt-template .receipt-head { padding-bottom: 4px !important; margin-bottom: 4px !important; }
+            #printArea.print-a6 .receipt-template .receipt-barcode { margin-top: 4px !important; }
+            #printArea.print-a6 .receipt-template .receipt-disclaimer { margin-top: 4px !important; }
+            #printArea.print-a4 .receipt-template { width: 210mm !important; max-width: 210mm !important; min-height: 0 !important; }
+        }
+        @page receipt-a4 { size: A4 portrait; margin: 0; }
+        @page receipt-a5 { size: A5 portrait; margin: 0; }
+        @media screen { #printArea { display: none !important; } }
+        .receipt-disclaimer { text-align: center; font-size: 10px; font-weight: bold; margin: 8px 0 0; border-top: 1px solid #777; padding-top: 4px; }
+        @media print { body.printing-list > :not(#listPrintArea) { display:none !important; } body.printing-list #listPrintArea { display:block !important; position:fixed !important; top:0 !important; left:0 !important; width:100% !important; padding:6mm !important; box-sizing:border-box !important; color:#111 !important; background:#fff !important; z-index:2147483647 !important; } .list-print-grid { display:grid !important; grid-template-columns:1fr 1fr !important; gap:1mm 8mm !important; font-size:8.5pt !important; } .list-print-column { display:grid !important; grid-template-rows:repeat(26, 7mm) !important; align-content:start !important; } .list-print-column .list-print-item { min-height:0 !important; height:7mm !important; } .list-print-item { display:grid !important; grid-template-columns:18mm 1fr 28mm !important; align-items:center !important; border-bottom:1px solid #aaa !important; padding:1mm 0 !important; min-height:7mm !important; color:#111 !important; } }
+        @media screen { #listPrintArea { display:none !important; } }
+    </style>
+</head>
+<body class="p-2 md:p-6">
+
+<div id="loginScreen" class="loading-overlay">
+    <div class="bg-white text-gray-800 rounded-3xl p-8 max-w-md w-full shadow-2xl text-center border border-gray-100">
+        <div class="w-20 h-20 bg-blue-100 text-blue-900 rounded-full flex items-center justify-center mx-auto mb-4 text-3xl">
+            <i class="fas fa-user-lock"></i>
+        </div>
+        <h2 class="text-2xl font-black mb-1">تسجيل الدخول للنظام</h2>
+        <p class="text-gray-500 text-sm mb-6">محل وليد للأقساط وإدارة المبيعات</p>
+        <div class="space-y-4">
+            <input type="password" id="pinInput" placeholder="أدخل رمز الدخول (الافتراضي: 2001)" class="w-full text-center text-xl font-bold border-2 border-gray-300 rounded-xl p-3 focus:border-blue-600 focus:outline-none">
+            <button id="loginBtn" class="w-full btn-primary btn-action justify-center py-3 text-lg rounded-xl shadow-lg">
+                <i class="fas fa-sign-in-alt"></i> دخول النظام
+            </button>
+        </div>
+        <p id="loginError" class="text-red-500 text-sm font-bold mt-4 hidden"><i class="fas fa-exclamation-triangle"></i> رمز الدخول غير صحيح!</p>
+    </div>
+</div>
+
+<div class="max-w-7xl mx-auto" id="appContainer">
+    <div class="bg-gradient-to-l from-blue-900 via-indigo-900 to-slate-900 rounded-2xl p-5 mb-6 text-white shadow-xl flex justify-between items-center flex-wrap gap-4 no-print">
+        <div class="flex items-center gap-4">
+            <div class="bg-white/10 p-2 rounded-xl backdrop-blur-md">
+                <img id="headerLogo" src="https://placehold.co/60x60/1e3a8a/ffffff?text=Qsite" alt="Official Logo" class="w-14 h-14 object-contain rounded-lg border border-white/20">
+            </div>
+            <div>
+                <h1 class="text-2xl font-black tracking-wide">نظام قساطي – محل وليد</h1>
+                <p class="text-blue-200 text-sm">إدارة المبيعات، المخزون، والديون والتقسيط</p>
+            </div>
+        </div>
+        <div class="flex items-center gap-3">
+            <button id="specialBtn" class="btn-special btn-action" title="فحص باركود"><i class="fas fa-camera"></i> فحص باركود</button>
+            <button id="lockSystemBtn" class="btn-danger btn-action bg-red-600 hover:bg-red-700"><i class="fas fa-power-off"></i> غلق النظام</button>
+        </div>
+    </div>
+
+    <div class="flex flex-wrap gap-2 md:gap-3 mb-6 border-b pb-4 no-print overflow-x-auto">
+        <button data-tab="phones" class="tab-main-btn btn-tab px-5 py-2.5 font-bold active"><i class="fas fa-mobile-alt"></i> الموبايلات</button>
+        <button data-tab="devices" class="tab-main-btn btn-tab px-5 py-2.5 font-bold"><i class="fas fa-plug"></i> الأجهزة الكهربائية</button>
+        <button data-tab="inventory" class="tab-main-btn btn-tab px-5 py-2.5 font-bold"><i class="fas fa-boxes"></i> المخزن والأسعار</button>
+        <button data-tab="pos" class="tab-main-btn btn-tab px-5 py-2.5 font-bold"><i class="fas fa-cash-register"></i> نقطة البيع (POS)</button>
+        <button data-tab="stats" class="tab-main-btn btn-tab px-5 py-2.5 font-bold"><i class="fas fa-chart-pie"></i> الإحصائيات والأقساط</button>
+        <button data-tab="settings" class="tab-main-btn btn-tab px-5 py-2.5 font-bold"><i class="fas fa-cog"></i> الإعدادات والنسخ</button>
+    </div>
+
+    <div id="tabPhones" class="tab-content">
+        <div class="bg-white rounded-2xl shadow-sm border p-5 mb-6">
+            <h2 class="text-xl font-bold mb-4 flex items-center gap-2"><i class="fas fa-user-plus text-blue-600"></i> إضافة زبون تقسيط جديد (قسم الموبايلات)</h2>
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+                <div>
+                    <label class="block text-xs font-bold text-gray-600 mb-1">تسلسل السجل *</label>
+                    <select id="phoneLedgerSelect" class="w-full border rounded-xl p-2.5"></select><input type="text" id="phoneSeq" placeholder="رقم تلقائي داخل السجل" class="w-full border rounded-xl p-2.5 font-mono mt-1" readonly>
+                </div>
+                <div>
+                    <label class="block text-xs font-bold text-gray-600 mb-1">اسم الزبون الثلاثي *</label>
+                    <input type="text" id="phoneName" placeholder="الاسم الكامل" class="w-full border rounded-xl p-2.5">
+                    <p id="phonePreviousDebt" class="text-xs font-bold text-amber-700 mt-1"></p>
+                </div>
+                <div>
+                    <label class="block text-xs font-bold text-gray-600 mb-1">رقم الهاتف (اختياري)</label>
+                    <input type="tel" id="phoneCustomerPhone" placeholder="07xxxxxxxx" class="w-full border rounded-xl p-2.5">
+                </div>
+                <div>
+                    <label class="block text-xs font-bold text-gray-600 mb-1">تاريخ تسجيل الدين *</label>
+                    <input type="date" id="phoneDebtDate" class="w-full border rounded-xl p-2.5">
+                </div>
+                <div>
+                    <label class="block text-xs font-bold text-gray-600 mb-1">نوع الهاتف / الجهاز *</label>
+                    <input type="text" id="phoneType" list="phoneProductOptions" placeholder="اختر من المخزن أو اكتب اسم الجهاز" class="w-full border rounded-xl p-2.5"><datalist id="phoneProductOptions"></datalist>
+                </div>
+                <div>
+                    <label class="block text-xs font-bold text-gray-600 mb-1">سعر البيع بالتقسيط (د.ع) *</label>
+                    <input type="text" id="phoneTotalAmount" placeholder="أدخل المبلغ" class="w-full border rounded-xl p-2.5 price-input">
+                </div>
+                <div>
+                    <label class="block text-xs font-bold text-gray-600 mb-1">القسط الشهري (د.ع) *</label>
+                    <input type="text" id="phoneMonthly" placeholder="سعر التسديد كل شهر" class="w-full border rounded-xl p-2.5 price-input">
+                </div>
+                <div>
+                    <label class="block text-xs font-bold text-gray-600 mb-1">المقدمة (اختياري)</label>
+                    <input type="text" id="phoneDownPayment" placeholder="المقدمة" class="w-full border rounded-xl p-2.5 price-input">
+                    <input type="number" id="phoneInstallments" placeholder="عدد الأشهر يحسب تلقائياً" min="1" readonly class="w-full border rounded-xl p-2.5 bg-slate-100 mt-2 font-bold text-blue-700">
+                </div>
+            </div>
+            <div class="flex flex-wrap gap-3 mt-5 border-t pt-4">
+                <button id="savePrintPhoneBtn" class="form-btn btn-success border-green-700 text-white rounded-xl px-4 py-2 font-bold"><i class="fas fa-print"></i> حفظ وطباعة وصل</button>
+                <button id="saveOnlyPhoneBtn" class="form-btn bg-slate-700 border-slate-800 text-white rounded-xl px-4 py-2 font-bold"><i class="fas fa-save"></i> حفظ في السجل فقط</button>
+            </div>
+        </div>
+
+        <div class="bg-white rounded-2xl shadow-sm border p-5">
+            <h2 class="text-xl font-bold flex items-center gap-2 mb-4"><i class="fas fa-mobile-alt text-blue-600"></i> قائمة زبائن الموبايلات (تقسيط)</h2>
+            <div class="mb-4 relative">
+                <div class="flex gap-2 mb-2">
+                    <input type="text" id="searchPhonesInput" placeholder="اكتب رقم السجل أو كلمة من الاسم الثلاثي..." class="w-full pr-4 pl-4 py-3 border rounded-xl focus:outline-none">
+                    <button id="searchPhonesBtn" class="btn-primary px-5 rounded-xl font-bold"><i class="fas fa-search"></i> بحث</button>
+                    <button id="exportPhonesPdfBtn" class="btn-purple px-5 rounded-xl font-bold"><i class="fas fa-file-pdf"></i> طباعة القائمة</button>
+                </div>
+                <select id="phoneStatusFilter" class="w-full border rounded-xl p-2 font-bold"><option value="all">فلترة: الكل</option><option value="paid">مسدد بالكامل</option><option value="unpaid">غير مسدد</option><option value="late">متأخر</option></select>
+            </div>
+            <div id="phonesDebtorsList" class="space-y-3 max-h-[500px] overflow-y-auto"></div>
+        </div>
+    </div>
+
+    <div id="tabDevices" class="tab-content hidden">
+        <div class="bg-white rounded-2xl shadow-sm border p-5 mb-6">
+            <h2 class="text-xl font-bold mb-4 flex items-center gap-2"><i class="fas fa-plug text-blue-600"></i> إضافة زبون تقسيط جديد (الأجهزة الكهربائية)</h2>
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+                <div>
+                    <label class="block text-xs font-bold text-gray-600 mb-1">تسلسل السجل *</label>
+                    <select id="deviceLedgerSelect" class="w-full border rounded-xl p-2.5"></select><input type="text" id="deviceSeq" placeholder="رقم تلقائي داخل السجل" class="w-full border rounded-xl p-2.5 font-mono mt-1" readonly>
+                </div>
+                <div>
+                    <label class="block text-xs font-bold text-gray-600 mb-1">اسم الزبون الثلاثي *</label>
+                    <input type="text" id="deviceName" placeholder="الاسم الكامل" class="w-full border rounded-xl p-2.5">
+                    <p id="devicePreviousDebt" class="text-xs font-bold text-amber-700 mt-1"></p>
+                </div>
+                <div>
+                    <label class="block text-xs font-bold text-gray-600 mb-1">رقم الهاتف (اختياري)</label>
+                    <input type="tel" id="deviceCustomerPhone" placeholder="07xxxxxxxx" class="w-full border rounded-xl p-2.5">
+                </div>
+                <div>
+                    <label class="block text-xs font-bold text-gray-600 mb-1">تاريخ تسجيل الدين *</label>
+                    <input type="date" id="deviceDebtDate" class="w-full border rounded-xl p-2.5">
+                </div>
+                <div>
+                    <label class="block text-xs font-bold text-gray-600 mb-1">نوع الجهاز الكهربائي *</label>
+                    <input type="text" id="deviceTypeName" list="deviceProductOptions" placeholder="اختر من المخزن أو اكتب اسم الجهاز" class="w-full border rounded-xl p-2.5"><datalist id="deviceProductOptions"></datalist>
+                </div>
+                <div>
+                    <label class="block text-xs font-bold text-gray-600 mb-1">سعر البيع بالتقسيط (د.ع) *</label>
+                    <input type="text" id="deviceTotalAmount" placeholder="أدخل المبلغ" class="w-full border rounded-xl p-2.5 price-input">
+                </div>
+                <div>
+                    <label class="block text-xs font-bold text-gray-600 mb-1">القسط الشهري (د.ع) *</label>
+                    <input type="text" id="deviceMonthly" placeholder="سعر التسديد كل شهر" class="w-full border rounded-xl p-2.5 price-input">
+                </div>
+                <div>
+                    <label class="block text-xs font-bold text-gray-600 mb-1">المقدمة (اختياري)</label>
+                    <input type="text" id="deviceDownPayment" placeholder="المقدمة" class="w-full border rounded-xl p-2.5 price-input">
+                    <input type="number" id="deviceInstallments" placeholder="عدد الأشهر يحسب تلقائياً" min="1" readonly class="w-full border rounded-xl p-2.5 bg-slate-100 mt-2 font-bold text-blue-700">
+                </div>
+            </div>
+            <div class="flex flex-wrap gap-3 mt-5 border-t pt-4">
+                <button id="savePrintDeviceBtn" class="form-btn btn-success border-green-700 text-white rounded-xl px-4 py-2 font-bold"><i class="fas fa-print"></i> حفظ وطباعة وصل</button>
+                <button id="saveOnlyDeviceBtn" class="form-btn bg-slate-700 border-slate-800 text-white rounded-xl px-4 py-2 font-bold"><i class="fas fa-save"></i> حفظ في السجل فقط</button>
+            </div>
+        </div>
+
+        <div class="bg-white rounded-2xl shadow-sm border p-5">
+            <h2 class="text-xl font-bold flex items-center gap-2 mb-4"><i class="fas fa-tv text-blue-600"></i> قائمة زبائن الأجهزة الكهربائية</h2>
+            <div class="mb-4 relative">
+                <div class="flex gap-2 mb-2">
+                    <input type="text" id="searchDevicesInput" placeholder="اكتب رقم السجل أو كلمة من الاسم الثلاثي..." class="w-full pr-4 pl-4 py-3 border rounded-xl focus:outline-none">
+                    <button id="searchDevicesBtn" class="btn-primary px-5 rounded-xl font-bold"><i class="fas fa-search"></i> بحث</button>
+                    <button id="exportDevicesPdfBtn" class="btn-purple px-5 rounded-xl font-bold"><i class="fas fa-file-pdf"></i> طباعة القائمة</button>
+                </div>
+                <select id="deviceStatusFilter" class="w-full border rounded-xl p-2 font-bold"><option value="all">فلترة: الكل</option><option value="paid">مسدد بالكامل</option><option value="unpaid">غير مسدد</option><option value="late">متأخر</option></select>
+            </div>
+            <div id="devicesDebtorsList" class="space-y-3 max-h-[500px] overflow-y-auto"></div>
+        </div>
+    </div>
+
+    <div id="tabInventory" class="tab-content hidden">
+        <div class="bg-white rounded-2xl shadow-sm border p-5 mb-6">
+            <h2 class="text-xl font-bold mb-4 flex items-center gap-2"><i class="fas fa-box-open text-blue-600"></i> إضافة مادة جديدة للمخزن</h2>
+            <div class="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-4 gap-4">
+                <input type="text" id="productName" placeholder="اسم المادة *" class="border rounded-xl p-2.5">
+                <label class="border rounded-xl p-2.5 text-sm font-bold text-gray-600">صورة المادة <input type="file" id="productImage" accept="image/*" class="block w-full text-xs mt-1"></label>
+                <select id="productCategory" class="border rounded-xl p-2.5 bg-white font-bold">
+                    <option value="موبايلات">موبايلات</option>
+                    <option value="اجهزة كهربائية">أجهزة كهربائية</option>
+                </select>
+                <input type="text" id="productType" placeholder="النوع / اللون / الموديل" class="border rounded-xl p-2.5">
+                <input type="number" id="productQuantity" placeholder="العدد المتوفر *" class="border rounded-xl p-2.5">
+                <div>
+                    <label class="text-xs text-gray-500 font-bold block mb-1">سعر البيع نقدًا (د.ع) *</label>
+                    <input type="text" id="productSaleCash" placeholder="سعر النقد" class="border rounded-xl p-2.5 w-full price-input">
+                </div>
+                <div>
+                    <label class="text-xs text-gray-500 font-bold block mb-1">سعر البيع بالتقسيط (د.ع) *</label>
+                    <input type="text" id="productSaleInstallment" placeholder="سعر التقسيط" class="border rounded-xl p-2.5 w-full price-input">
+                </div>
+            </div>
+            <button id="saveProductBtn" class="btn-primary btn-action mt-4"><i class="fas fa-plus-circle"></i> حفظ المادة للمخزن</button>
+        </div>
+
+        <div class="bg-white rounded-2xl shadow-sm border p-5">
+            <div class="flex justify-between items-center mb-4 flex-wrap gap-2">
+                <h2 class="text-xl font-bold"><i class="fas fa-warehouse text-blue-600"></i> جدول المخزون والأسعار</h2>
+            </div>
+            <div class="overflow-x-auto">
+                <table class="min-w-full bg-white border rounded-xl overflow-hidden text-center text-sm">
+                    <thead class="bg-slate-100 text-slate-800 font-bold">
+                        <tr>
+                            <th class="p-3">الصورة</th>
+                            <th class="p-3">رمز المادة</th>
+                            <th class="p-3">اسم المادة</th>
+                            <th class="p-3">الصنف</th>
+                            <th class="p-3">النوع/اللون</th>
+                            <th class="p-3">الكمية</th>
+                            <th class="p-3">السعر نقداً</th>
+                            <th class="p-3">السعر بالتقسيط</th>
+                            <th class="p-3">الإجراءات</th>
+                        </tr>
+                    </thead>
+                    <tbody id="inventoryTableBody"></tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <div id="tabPos" class="tab-content hidden">
+        <div class="grid lg:grid-cols-3 gap-6">
+            <div class="lg:col-span-2 bg-white rounded-2xl shadow-sm border p-5">
+                <h2 class="text-xl font-bold mb-4 flex items-center gap-2"><i class="fas fa-cash-register text-blue-600"></i> نقطة البيع السريعة (نقد)</h2>
+                <div id="posProductsGrid" class="grid grid-cols-2 md:grid-cols-3 gap-4 max-h-[600px] overflow-y-auto"></div>
+            </div>
+            <div class="bg-white rounded-2xl shadow-sm border p-5">
+                <h3 class="text-lg font-bold mb-3 text-gray-800"><i class="fas fa-shield-alt text-green-600"></i> مبيعات النقد الأخيرة (حالة الضمان)</h3>
+                <div id="activeWarrantiesList" class="space-y-3 max-h-[550px] overflow-y-auto"></div>
+            </div>
+        </div>
+    </div>
+
+    <div id="tabStats" class="tab-content hidden space-y-6">
+        <div class="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-7 gap-3">
+            <div class="bg-white p-4 rounded-2xl border shadow-sm text-center">
+                <p class="text-xs text-gray-500 font-bold">إجمالي المبيعات</p>
+                <p id="statTotalSales" class="text-base font-black text-blue-600 mt-1">0</p>
+            </div>
+            <div class="bg-white p-4 rounded-2xl border shadow-sm text-center">
+                <p class="text-xs text-gray-500 font-bold">إجمالي المدفوع</p>
+                <p id="statTotalPaid" class="text-base font-black text-green-600 mt-1">0</p>
+            </div>
+            <div class="bg-white p-4 rounded-2xl border shadow-sm text-center">
+                <p class="text-xs text-gray-500 font-bold">إجمالي المتبقي</p>
+                <p id="statTotalRemaining" class="text-base font-black text-red-600 mt-1">0</p>
+            </div>
+            <div class="bg-white p-4 rounded-2xl border shadow-sm text-center">
+                <p class="text-xs text-gray-500 font-bold">عدد المسددين</p>
+                <p id="statPaidCount" class="text-base font-black text-emerald-600 mt-1">0</p>
+            </div>
+            <div class="bg-white p-4 rounded-2xl border shadow-sm text-center">
+                <p class="text-xs text-gray-500 font-bold">غير المسددين</p>
+                <p id="statUnpaidCount" class="text-base font-black text-amber-600 mt-1">0</p>
+            </div>
+            <div class="bg-white p-4 rounded-2xl border shadow-sm text-center">
+                <p class="text-xs text-gray-500 font-bold">المتأخرين</p>
+                <p id="statLateCount" class="text-base font-black text-rose-700 mt-1">0</p>
+            </div>
+            <div class="bg-white p-4 rounded-2xl border shadow-sm text-center col-span-2 md:col-span-1">
+                <p class="text-xs text-gray-500 font-bold">إجمالي الزبائن</p>
+                <p id="statCustomersCount" class="text-base font-black text-indigo-600 mt-1">0</p>
+            </div>
+        </div>
+
+        <div class="bg-white rounded-2xl shadow-sm border p-6">
+            <div class="flex flex-wrap justify-between items-center gap-4 mb-6 border-b pb-4">
+                <h3 class="text-xl font-bold text-gray-800"><i class="fas fa-calendar-alt text-blue-600"></i> السجل الشامل للزبائن</h3>
+            </div>
+            <div class="flex flex-wrap gap-3 mb-4">
+                <select id="statsCategoryFilter" class="border rounded-xl p-2 font-bold"><option value="all">كل الأقسام</option><option value="phones">الموبايلات</option><option value="devices">الأجهزة الكهربائية</option></select>
+                <select id="statsStatusFilter" class="border rounded-xl p-2 font-bold"><option value="all">كل الحالات</option><option value="paid">مسدد بالكامل</option><option value="unpaid">غير مسدد</option></select>
+                <button id="printStatsBtn" class="btn-primary btn-action"><i class="fas fa-print"></i> طباعة السجل الظاهر</button>
+                <button id="printNamesListBtn" class="btn-purple btn-action"><i class="fas fa-list-ol"></i> طباعة قائمة الأسماء (50)</button>
+            </div>
+            <div id="monthlyCustomersContainer" class="space-y-3 max-h-[500px] overflow-y-auto"></div>
+        </div>
+    </div>
+
+    <div id="tabSettings" class="tab-content hidden">
+        <div class="bg-white rounded-2xl shadow-sm border p-6 space-y-6">
+            <div class="border-b pb-4 bg-gradient-to-r from-blue-50 to-indigo-50 p-4 rounded-xl">
+                <h3 class="text-lg font-bold mb-2 text-blue-900"><i class="fas fa-paint-brush text-blue-600"></i> تخصيص وتصميم الوصولات A4 / A5 / A6 واللوغو</h3>
+                <p class="text-xs text-gray-600 mb-3">اختر مقاس الوصل من نافذة الطباعة، ثم افتح المصمم لترتيب العناصر وحفظ التصميم.</p>
+                <div class="flex flex-wrap gap-2">
+                    <button id="openDesignerModalBtn" class="btn-primary btn-action"><i class="fas fa-drafting-compass"></i> عرض التصاميم والمعاينة</button>
+                    <label class="btn-purple btn-action cursor-pointer"><i class="fas fa-image"></i> رفع اللوغو
+                        <input id="settingsLogoInput" type="file" accept="image/*" class="hidden">
+                    </label>
+                </div>
+                <p id="logoUploadStatus" class="text-xs text-green-700 font-bold mt-2"></p>
+                <div class="mt-3 flex flex-wrap items-center gap-2">
+                    <label class="flex items-center gap-2 text-xs font-bold mr-2"><input id="showReceiptBarcodeToggle" type="checkbox" class="w-5 h-5" checked> عرض الباركود</label>
+                </div>
+            </div>
+
+            <div class="border-b pb-4"><h3 class="text-lg font-bold mb-2"><i class="fas fa-book text-blue-600"></i> سجلات الزبائن</h3><div id="ledgerManagementList" class="space-y-2"></div><div class="flex gap-2 mt-3"><input id="newLedgerName" class="border rounded-xl p-2.5" placeholder="اسم سجل جديد"><button id="addLedgerBtn" class="btn-primary btn-action">إضافة سجل</button></div></div>
+
+            <div class="border-b pb-4">
+                <h3 class="text-lg font-bold mb-3"><i class="fas fa-key text-blue-600"></i> تغيير رمز الدخول</h3>
+                <div class="flex flex-wrap gap-3 items-center">
+                    <input type="password" id="newPinInput" placeholder="أدخل الرمز الجديد" class="border rounded-xl p-2.5 w-64">
+                    <button id="changePinBtn" class="btn-primary btn-action"><i class="fas fa-shield-alt"></i> حفظ الرمز</button>
+                </div>
+            </div>
+
+            <div class="border-b pb-4">
+                <h3 class="text-lg font-bold mb-2"><i class="fas fa-calculator text-blue-600"></i> إضافة ثلاثة أصفار تلقائياً</h3>
+                <label class="flex items-center gap-3 cursor-pointer">
+                    <input type="checkbox" id="autoAddZerosToggle" class="w-5 h-5 text-blue-600 rounded">
+                    <span class="font-bold text-gray-700">إضافة ثلاثة أصفار تلقائيًا عند كتابة مبلغ (يمكن إيقافها)</span>
+                </label>
+            </div>
+
+            <div class="border-b pb-4">
+                <h3 class="text-lg font-bold mb-2"><i class="fas fa-sync text-blue-600"></i> النسخ الاحتياطي والأنظمة</h3>
+                <div class="flex flex-wrap gap-3 mt-4">
+                    <button id="backupNowBtn" class="btn-success btn-action"><i class="fas fa-download"></i> تصدير نسخة احتياطية للابتوب</button>
+                    <button id="backupTelegramBtn" class="btn-primary btn-action"><i class="fab fa-telegram"></i> إرسال نسخة عبر تيليغرام</button>
+                    <button id="restoreBackupBtn" class="btn-purple btn-action"><i class="fas fa-upload"></i> استعادة نسخة احتياطية</button>
+                    <input type="file" id="restoreFileInput" accept=".json" class="hidden">
+                </div>
+            </div>
+
+            <div class="border-b pb-4">
+                <h3 class="text-lg font-bold mb-2"><i class="fab fa-telegram text-sky-600"></i> إشعارات تيليغرام</h3>
+                <div class="grid md:grid-cols-2 gap-2">
+                    <input id="telegramBotToken" type="password" placeholder="توكن البوت" class="border rounded-xl p-2.5">
+                    <input id="telegramOwnerId" placeholder="ايدي المالك الأول" class="border rounded-xl p-2.5">
+                    <input id="telegramOwner2Id" placeholder="ايدي المالك الثاني" class="border rounded-xl p-2.5">
+                    <input id="telegramDeveloperId" placeholder="ايدي المبرمج" class="border rounded-xl p-2.5">
+                </div>
+                <div class="flex items-center gap-3 mt-3"><label class="flex items-center gap-2 text-sm font-bold"><input id="telegramNotificationsEnabled" type="checkbox" class="w-5 h-5"> تفعيل تنبيهات الدين والتسديد والتأخر</label><button id="saveTelegramSettingsBtn" class="btn-primary btn-action">حفظ الإعدادات</button><button id="testTelegramBtn" class="btn-purple btn-action">إرسال رسالة اختبار</button></div>
+                <p class="text-xs text-gray-500 mt-2">التوكن ومعرّفات الحسابات تحفظ محلياً على هذا الجهاز. إشعارات المتصفح المحلي لا تعمل إذا كان الملف مغلقاً.</p>
+            </div>
+
+            <div class="pt-2">
+                <h3 class="text-lg font-bold text-red-600 mb-2"><i class="fas fa-exclamation-triangle"></i> تصفير النظام</h3>
+                <button id="wipeAllDataBtn" class="btn-danger btn-action"><i class="fas fa-trash-alt"></i> مسح جميع البيانات</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div id="designerModal" class="loading-overlay hidden">
+    <div class="bg-white text-gray-800 rounded-3xl p-6 max-w-4xl w-full max-h-[90vh] overflow-y-auto shadow-2xl">
+        <div class="flex justify-between items-center border-b pb-3 mb-4">
+            <h2 class="text-xl font-bold"><i class="fas fa-paint-brush text-blue-600"></i> مصمم الوصولات الاحترافي A4 / A5 / A6</h2>
+            <button id="closeDesignerModalBtn" class="text-2xl font-bold text-gray-400 hover:text-gray-600">&times;</button>
+        </div>
+        <div class="flex flex-wrap items-center gap-3 mb-4 bg-slate-50 p-3 rounded-xl border">
+            <label class="text-xs font-bold">الحجم الأساسي: 
+                <select id="designerSizeSelect" class="border rounded p-1">
+                    <option value="A4">A4</option>
+                    <option value="A5" selected>A5</option>
+                    <option value="A6">A6</option>
+                </select>
+            </label>
+            <label class="text-xs font-bold">التصميم: 
+                <select id="designerTemplateSelect" class="border rounded p-1">
+                    <option value="style-1">تصميم 1</option>
+                    <option value="style-2">تصميم 2</option>
+                    <option value="style-3">تصميم 3</option>
+                    <option value="style-4">تصميم 4</option>
+                    <option value="style-5">تصميم 5</option>
+                </select>
+            </label>
+            <button id="addDesignerTextBtn" type="button" class="btn-primary text-xs py-1.5 px-3 rounded-lg"><i class="fas fa-plus"></i> إضافة نص جديد</button>
+            <button id="saveReceiptDesignBtn" class="btn-success text-xs py-1.5 px-3 rounded-lg"><i class="fas fa-save"></i> حفظ التصميم</button>
+            <button id="resetReceiptDesignBtn" class="btn-danger text-xs py-1.5 px-3 rounded-lg"><i class="fas fa-undo"></i> إعادة تعيين</button>
+        </div>
+        <p class="text-xs text-slate-500 mb-3">اضغط على أي عنصر واسحبه لترتيب المكان، ثم احفظ التصميم لهذا المقاس.</p>
+        <div id="a5Canvas" class="a5-canvas-container"></div>
+    </div>
+</div>
+
+<div id="paymentModal" class="loading-overlay hidden">
+    <div class="bg-white text-gray-800 rounded-2xl p-6 max-w-lg w-full text-right">
+        <div class="flex justify-between items-center border-b pb-3 mb-3">
+            <h3 class="text-lg font-bold">تسديد قسط الزبون: <span id="payCustName" class="text-blue-600"></span></h3>
+            <button id="closePaymentModalBtn" class="text-xl font-bold text-gray-400 hover:text-gray-600">&times;</button>
+        </div>
+        <div class="space-y-3">
+            <div class="bg-blue-50 p-3 rounded-xl flex justify-between items-center">
+                <span class="text-xs font-bold text-gray-600">المبلغ المتبقي الحالي:</span>
+                <span id="payCustTotalRem" class="text-lg font-black text-red-600">0 د.ع</span>
+            </div>
+            <div>
+                <label class="block text-xs font-bold text-gray-600 mb-1">المبلغ المدفوع (د.ع):</label>
+                <input type="text" id="payAmountInput" placeholder="أدخل المبلغ المراد تسديده" class="w-full border rounded-xl p-2.5 font-bold text-green-600 price-input">
+            </div>
+            <div><label class="block text-xs font-bold text-gray-600 mb-1">تاريخ التسديد:</label><input type="date" id="payDateInput" class="w-full border rounded-xl p-2.5"></div>
+            <div><label class="block text-xs font-bold text-gray-600 mb-1">ملاحظات التسديد (اختياري):</label><input type="text" id="payNotesInput" class="w-full border rounded-xl p-2.5" placeholder="طريقة الدفع أو ملاحظة"></div>
+        </div>
+        <div class="flex justify-end gap-3 mt-6 border-t pt-4">
+            <button id="cancelPaymentBtn" class="btn-secondary px-4 py-2 rounded-xl border">إلغاء</button>
+            <button id="confirmPaymentBtn" class="btn-success px-5 py-2 rounded-xl"><i class="fas fa-check-circle"></i> تأكيد التسديد وطباعة وصل</button>
+        </div>
+    </div>
+</div>
+
+<div id="scannerModal" class="loading-overlay hidden">
+    <div class="bg-white text-gray-800 rounded-2xl p-6 max-w-md w-full text-center">
+        <div class="flex justify-between items-center border-b pb-3 mb-3">
+            <h3 class="text-lg font-bold"><i class="fas fa-qrcode text-blue-600"></i> ماسح الباركود / QR</h3>
+            <button id="closeScannerModalBtn" class="text-xl font-bold text-gray-400 hover:text-gray-600">&times;</button>
+        </div>
+        <div class="relative w-full aspect-square bg-black rounded-xl overflow-hidden mb-3">
+            <video id="scannerVideo" class="w-full h-full object-cover" playsinline></video>
+        </div>
+        <p id="scannerStatus" class="text-xs font-bold text-gray-500">جاري تشغيل الكاميرا...</p>
+    </div>
+</div>
+
+    <div id="printArea" class="hidden"></div>
+<div id="listPrintArea" class="hidden"></div>
+<div id="accountStatementModal" class="loading-overlay hidden"><div class="bg-white text-gray-800 rounded-2xl p-6 w-[min(94vw,600px)] max-h-[85vh] overflow-y-auto shadow-2xl"><div class="flex justify-between items-center mb-4"><h3 class="text-xl font-black">كشف حساب الزبون</h3><button id="closeAccountStatementBtn" class="text-2xl">&times;</button></div><div id="accountStatementContent"></div><button id="printAccountStatementBtn" class="btn-primary btn-action mt-4"><i class="fas fa-print"></i> طباعة كشف الحساب</button></div></div>
+<div id="addDebtModal" class="loading-overlay hidden"><div class="bg-white text-gray-800 rounded-2xl p-6 w-[min(94vw,600px)] max-h-[88vh] overflow-y-auto shadow-2xl"><div class="flex justify-between items-center mb-4"><h3 class="text-xl font-black">إضافة دين جديد</h3><button id="closeAddDebtModalBtn" class="text-2xl">&times;</button></div><div class="grid md:grid-cols-2 gap-3"><select id="newDebtCategory" class="border rounded-xl p-2.5"><option value="phones">موبايلات</option><option value="devices">أجهزة كهربائية</option></select><select id="newDebtLedger" class="border rounded-xl p-2.5"></select><input id="newDebtSeq" class="border rounded-xl p-2.5" readonly placeholder="رقم الزبون في السجل"><input id="newDebtName" class="border rounded-xl p-2.5" placeholder="اسم الزبون"><input id="newDebtPhone" class="border rounded-xl p-2.5" placeholder="رقم الهاتف"><input id="newDebtDevice" class="border rounded-xl p-2.5" placeholder="الجهاز / المادة"><input id="newDebtTotal" class="border rounded-xl p-2.5" type="number" placeholder="قيمة الدين"><input id="newDebtDown" class="border rounded-xl p-2.5" type="number" placeholder="المقدمة"><input id="newDebtMonthly" class="border rounded-xl p-2.5" type="number" placeholder="قسط الشهر"><input id="newDebtDate" class="border rounded-xl p-2.5" type="date"><textarea id="newDebtNotes" class="border rounded-xl p-2.5 md:col-span-2" placeholder="ملاحظات"></textarea></div><div class="flex justify-end gap-2 mt-4"><button id="cancelAddDebtBtn" class="border rounded-xl px-4 py-2">إلغاء</button><button id="saveNewDebtBtn" class="btn-success rounded-xl px-4 py-2">حفظ الدين</button></div></div></div>
+<div id="paymentOverageModal" class="loading-overlay hidden"><div class="bg-white rounded-2xl border-4 border-red-500 p-7 w-[min(92vw,420px)] text-center shadow-2xl"><h3 class="text-xl font-black text-red-600 mb-3">المبلغ المدفوع أكبر من المتبقي</h3><p id="paymentOverageMessage" class="font-bold text-gray-800 mb-5"></p><div class="flex justify-center gap-2"><button id="editOverageAmountBtn" class="btn-primary rounded-xl px-5 py-2">تعديل المبلغ</button><button id="closePaymentOverageBtn" class="border rounded-xl px-5 py-2">إلغاء التسديد</button></div></div></div>
+<div id="receiptPrintModal" class="loading-overlay hidden">
+    <div class="bg-white text-gray-800 rounded-2xl p-6 w-[min(92vw,420px)] text-center shadow-2xl">
+        <h3 class="text-xl font-black mb-4">اختر قياس الوصل</h3>
+        <div class="grid grid-cols-3 gap-2"><button data-print-size="A4" class="btn-primary rounded-xl p-3">A4</button><button data-print-size="A5" class="btn-primary rounded-xl p-3">A5</button><button data-print-size="A6" class="btn-primary rounded-xl p-3">A6</button></div>
+        <label class="flex justify-center items-center gap-2 my-4 font-bold"><input id="repeatReceiptToggle" type="checkbox" class="w-5 h-5"> تكرار الوصل (3 نسخ)</label>
+        <button id="cancelReceiptPrintBtn" class="border rounded-xl px-5 py-2">إلغاء</button>
+    </div>
+</div>
+
+<script>
+    let systemPin = "2001";
+    let autoAddZeros = false;
+    let phonesDebts = [];
+    let devicesDebts = [];
+    let inventory = [];
+    let paymentHistory = [];
+    let activeWarranties = [];
+    let appLogoUrl = "https://placehold.co/60x60/1e3a8a/ffffff?text=Qsite";
+    let showReceiptBarcode = true;
+    let selectedPaperSize = "A5";
+    let selectedStyle = "style-1";
+    let savedDesignElements = [];
+    let receiptProfiles = readStoredJson('walid_receipt_profiles', {});
+    let ledgers = [{id:'main',name:'السجل الأول'}];
+    let currentPaymentTarget = null; // { category: 'phones'|'devices', id: string }
+    let pendingReceiptData = null;
+    let telegramSettings = {};
+    let printCompletion = null;
+    let addDebtCustomerId = null;
+    
+    let scannerAnimationFrame = null;
+    let scannerStream = null;
+
+    function generateUUID() {
+        if (typeof crypto !== 'undefined' && crypto.randomUUID) {
+            return crypto.randomUUID();
+        }
+        return 'id-' + Date.now() + '-' + Math.random().toString(36).substring(2, 9);
+    }
+
+    function parseNumber(val) {
+        if (!val) return 0;
+        const cleaned = String(val).replace(/,/g, '').trim();
+        return parseFloat(cleaned) || 0;
+    }
+
+    function formatNumber(num) {
+        return new Intl.NumberFormat('en-US').format(num || 0);
+    }
+
+    function readStoredJson(key, fallback) {
+        try {
+            const raw = localStorage.getItem(key);
+            return raw === null ? fallback : JSON.parse(raw);
+        } catch (e) {
+            return fallback;
+        }
+    }
+
+    function saveData() {
+        localStorage.setItem("walid_system_pin", systemPin);
+        localStorage.setItem("walid_auto_zeros", JSON.stringify(autoAddZeros));
+        localStorage.setItem("walid_phones_debts", JSON.stringify(phonesDebts));
+        localStorage.setItem("walid_devices_debts", JSON.stringify(devicesDebts));
+        localStorage.setItem("walid_inventory", JSON.stringify(inventory));
+        localStorage.setItem("walid_payment_history", JSON.stringify(paymentHistory));
+        localStorage.setItem("walid_active_warranties", JSON.stringify(activeWarranties));
+        localStorage.setItem("walid_app_logo", appLogoUrl);
+        localStorage.setItem("walid_show_barcode", JSON.stringify(showReceiptBarcode));
+        localStorage.setItem("walid_paper_size", selectedPaperSize);
+        localStorage.setItem("walid_selected_style", selectedStyle);
+        localStorage.setItem("walid_design_elements", JSON.stringify(savedDesignElements));
+        localStorage.setItem('walid_ledgers', JSON.stringify(ledgers));
+    }
+
+    function loadData() {
+        systemPin = localStorage.getItem("walid_system_pin") || "2001";
+        autoAddZeros = readStoredJson("walid_auto_zeros", false);
+        phonesDebts = readStoredJson("walid_phones_debts", []);
+        devicesDebts = readStoredJson("walid_devices_debts", []);
+        [...phonesDebts,...devicesDebts].forEach(item=>{ if(!item.customerId)item.customerId=item.id; if(!item.ledgerId)item.ledgerId='main'; });
+        inventory = readStoredJson("walid_inventory", []);
+        paymentHistory = readStoredJson("walid_payment_history", []);
+        activeWarranties = readStoredJson("walid_active_warranties", []);
+        appLogoUrl = localStorage.getItem("walid_app_logo") || "https://placehold.co/60x60/1e3a8a/ffffff?text=Qsite";
+        showReceiptBarcode = readStoredJson("walid_show_barcode", true);
+        selectedPaperSize = localStorage.getItem("walid_paper_size") || "A5";
+        selectedStyle = localStorage.getItem("walid_selected_style") || "style-1";
+        savedDesignElements = readStoredJson("walid_design_elements", []);
+        telegramSettings = readStoredJson("walid_telegram_settings", {});
+        ledgers = readStoredJson('walid_ledgers', [{id:'main',name:'السجل الأول'}]);
+        ['telegramBotToken','telegramOwnerId','telegramOwner2Id','telegramDeveloperId'].forEach(id => { const el = document.getElementById(id); if (el) el.value = telegramSettings[id] || ''; });
+        const telegramToggle = document.getElementById('telegramNotificationsEnabled');
+        if (telegramToggle) telegramToggle.checked = !!telegramSettings.enabled;
+        renderLedgerSelectors(); renderProductOptions(); setDefaultDebtDates();
+
+        const headerLogo = document.getElementById('headerLogo');
+        if (headerLogo) headerLogo.src = appLogoUrl;
+        
+        const barcodeToggle = document.getElementById('showReceiptBarcodeToggle');
+        if (barcodeToggle) barcodeToggle.checked = showReceiptBarcode;
+        
+        const zerosToggle = document.getElementById('autoAddZerosToggle');
+        if (zerosToggle) zerosToggle.checked = autoAddZeros;
+
+        renderPhonesList();
+        renderDevicesList();
+        renderInventoryTable();
+        renderPOSProducts();
+        renderActiveWarranties();
+        updateStats();
+    }
+
+    function renderLedgerSelectors() {
+        ['phoneLedgerSelect','deviceLedgerSelect','newDebtLedger'].forEach(id => { const select = document.getElementById(id); if (!select) return; const previous = select.value; select.innerHTML = ledgers.map(ledger => `<option value="${escapeHTML(ledger.id)}">${escapeHTML(ledger.name)}</option>`).join(''); if (ledgers.some(ledger => ledger.id === previous)) select.value = previous; });
+        updateGeneratedSequences();
+    }
+    function ledgerItems(category, ledgerId) { return (category === 'phones' ? phonesDebts : devicesDebts).filter(item => (item.ledgerId || 'main') === ledgerId); }
+    function nextLedgerSequence(category, ledgerId) { const numbers = [...phonesDebts,...devicesDebts].filter(item=>(item.ledgerId||'main')===ledgerId).map(item => parseInt(item.seq,10)).filter(Number.isFinite); return String(Math.max(0,...numbers)+1).padStart(6,'0'); }
+    function updateGeneratedSequences() {
+        const phoneLedgerSelect=document.getElementById('phoneLedgerSelect');
+        const deviceLedgerSelect=document.getElementById('deviceLedgerSelect');
+        const phoneSeq = document.getElementById('phoneSeq'); if (phoneSeq) phoneSeq.value = nextLedgerSequence('phones',phoneLedgerSelect?.value || 'main');
+        const deviceSeq = document.getElementById('deviceSeq'); if (deviceSeq) deviceSeq.value = nextLedgerSequence('devices',deviceLedgerSelect?.value || 'main');
+        const category = document.getElementById('newDebtCategory')?.value || 'phones'; const ledgerId=document.getElementById('newDebtLedger')?.value || 'main'; const seq = document.getElementById('newDebtSeq');
+        if(seq){const list=category==='phones'?phonesDebts:devicesDebts;const customer=addDebtCustomerId?list.find(item=>item.id===addDebtCustomerId):null;seq.value=customer?customer.seq:nextLedgerSequence(category,ledgerId);}
+    }
+    function setDefaultDebtDates() { const today=new Date().toISOString().slice(0,10); ['phoneDebtDate','deviceDebtDate','newDebtDate','payDateInput'].forEach(id => { const input=document.getElementById(id); if(input && !input.value) input.value=today; }); }
+    function renderProductOptions() {
+        const phone=inventory.filter(item=>item.category==='موبايلات'), device=inventory.filter(item=>item.category!=='موبايلات');
+        const p=document.getElementById('phoneProductOptions'), d=document.getElementById('deviceProductOptions');
+        if(p)p.innerHTML=phone.map(item=>`<option value="${escapeHTML(item.name+(item.type?' - '+item.type:''))}"></option>`).join('');
+        if(d)d.innerHTML=device.map(item=>`<option value="${escapeHTML(item.name+(item.type?' - '+item.type:''))}"></option>`).join('');
+    }
+    function renderLedgerManagement() {
+        const area=document.getElementById('ledgerManagementList'); if(!area)return;
+        area.innerHTML=ledgers.map(ledger=>`<div class="flex items-center gap-2"><span class="font-bold">${escapeHTML(ledger.name)}</span><span class="text-xs text-gray-500">موبايلات: ${ledgerItems('phones',ledger.id).length} | أجهزة: ${ledgerItems('devices',ledger.id).length}</span>${ledger.id==='main'?'':`<button type="button" class="btn-danger px-2 py-1 rounded" onclick="removeLedger('${ledger.id}')">حذف</button>`}</div>`).join('');
+    }
+    function removeLedger(id) { if(ledgerItems('phones',id).length||ledgerItems('devices',id).length){alert('لا يمكن حذف سجل يحتوي على زبائن.');return;} ledgers=ledgers.filter(item=>item.id!==id); saveData(); renderLedgerSelectors(); renderLedgerManagement(); }
+    function phoneDuplicateWarning(phone) { if(!phone)return; const old=[...phonesDebts,...devicesDebts].find(item=>item.phone&&item.phone.replace(/\s/g,'')===phone.replace(/\s/g,'')); if(old)alert(`تنبيه: رقم الهاتف مسجل مسبقاً باسم (${old.name}). يمكنك متابعة التسجيل.`); }
+    function sequenceExists(category,seq,ledgerId) { return [...phonesDebts,...devicesDebts].some(item=>(item.ledgerId||'main')===ledgerId&&String(item.seq)===String(seq)); }
+
+    function renderReceiptHTML(data) {
+        const barcodeId = "bc_" + Math.random().toString(36).substr(2, 9);
+        const styleClass = selectedStyle || "style-1";
+        const sizeClass = "receipt-size-" + (selectedPaperSize || "a5").toLowerCase();
+
+        let itemsHTML = `
+            <div class="receipt-row">
+                <span>تفاصيل المادة / الجهاز:</span>
+                <span class="font-bold">${escapeHTML(data.device || 'غير محدد')}</span>
+            </div>
+        `;
+
+        let customElementsHTML = '';
+        if (savedDesignElements && savedDesignElements.length) {
+            customElementsHTML = savedDesignElements.map(el => `
+                <div style="position:absolute; left:${el.left}%; top:${el.top}%; font-size:${el.fontSize || 13}px; font-weight:${el.fontWeight || 'bold'}; color:${el.color || '#000'};">
+                    ${escapeHTML(el.text)}
+                </div>
+            `).join('');
+        }
+
+        return `
+            <div class="receipt-template ${styleClass} ${sizeClass}">
+                <div class="receipt-head">
+                    <div>
+                        <h2 class="text-xl font-black mb-1">محل وليد للأقساط</h2>
+                        <p class="text-xs text-gray-600">هاتف: 07800000000 | العنوان: السوق العام</p>
+                        <p class="text-xs font-bold mt-1">وصل: ${escapeHTML(data.title || 'وصل تسديد / تقسيط')}</p>
+                    </div>
+                    <img src="${escapeHTML(appLogoUrl)}" class="receipt-logo" alt="logo" onerror="this.src='https://placehold.co/60x60/1e3a8a/ffffff?text=Qsite'">
+                </div>
+
+                <div class="receipt-columns">
+                    <div><span class="text-xs text-gray-500">التسلسل:</span> <strong class="text-sm">${escapeHTML(data.seq || '---')}</strong></div>
+                    <div><span class="text-xs text-gray-500">التاريخ:</span> <strong class="text-sm">${escapeHTML(data.date || new Date().toLocaleDateString('ar-IQ'))}</strong></div>
+                    <div class="col-span-2"><span class="text-xs text-gray-500">اسم الزبون:</span> <strong class="text-sm">${escapeHTML(data.name || '---')}</strong></div>
+                    <div class="col-span-2"><span class="text-xs text-gray-500">رقم الهاتف:</span> <strong class="text-sm">${escapeHTML(data.phone || '---')}</strong></div>
+                </div>
+
+                <div class="receipt-box">
+                    ${itemsHTML}
+                    ${data.total !== undefined ? `<div class="receipt-row"><span>المبلغ الكلي:</span><span class="font-bold">${formatNumber(data.total)} د.ع</span></div>` : ''}
+                    ${data.paid !== undefined ? `<div class="receipt-row"><span>المبلغ المدفوع الآن / المقدمة:</span><span class="font-bold text-green-700">${formatNumber(data.paid)} د.ع</span></div>` : ''}
+                    ${data.remaining !== undefined ? `<div class="receipt-row"><span>المتبقي:</span><span class="font-bold text-red-700">${formatNumber(data.remaining)} د.ع</span></div>` : ''}
+                    ${data.monthly ? `<div class="receipt-row"><span>القسط الشهري:</span><span class="font-bold">${formatNumber(data.monthly)} د.ع</span></div>` : ''}
+                </div>
+                ${data.history ? `<div class="receipt-box"><strong>سجل التسديد:</strong>${data.history.length ? data.history.map(payment => `<div class="receipt-row"><span>${escapeHTML(payment.date || '')}</span><span>${formatNumber(payment.amount)} د.ع</span></div>`).join('') : '<div class="receipt-row">لا توجد تسديدات سابقة</div>'}</div>` : ''}
+
+                ${showReceiptBarcode ? `
+                    <div class="receipt-barcode">
+                        <svg id="${barcodeId}"></svg>
+                    </div>
+                ` : ''}
+
+                <div class="receipt-disclaimer">
+                    شكراً لتعاملكم معنا - يرجى الاحتفاظ بالوصل للمراجعة
+                </div>
+
+                <div class="saved-design-elements">
+                    ${customElementsHTML}
+                </div>
+            </div>
+        `;
+    }
+
+    function escapeHTML(str) {
+        if (!str) return '';
+        return String(str)
+            .replace(/&/g, '&amp;')
+            .replace(/</g, '&lt;')
+            .replace(/>/g, '&gt;')
+            .replace(/"/g, '&quot;')
+            .replace(/'/g, '&#039;');
+    }
+
+    function printReceipt(data, done = null) {
+        pendingReceiptData = data;
+        printCompletion = done;
+        const type = /تسديد/.test(data.title || '') ? 'payment' : /نقد/.test(data.title || '') ? 'cash' : /كشف حساب/.test(data.title || '') ? 'statement' : 'installment';
+        const profile = receiptProfiles[`default_${selectedPaperSize}`];
+        if (profile) { selectedStyle = profile.style || selectedStyle; savedDesignElements = profile.elements || savedDesignElements; }
+        else savedDesignElements = [];
+        document.getElementById('repeatReceiptToggle').checked = false;
+        document.getElementById('receiptPrintModal').classList.remove('hidden');
+    }
+
+    function startReceiptPrint(selected, repeat = false) {
+        const data = pendingReceiptData;
+        if (!data) return;
+        document.getElementById('receiptPrintModal').classList.add('hidden');
+        selectedPaperSize = selected;
+        const printArea = document.getElementById('printArea');
+        printArea.className = 'print-' + selected.toLowerCase();
+        document.documentElement.classList.remove('print-paper-a4', 'print-paper-a5');
+        if (selected !== 'A6') document.documentElement.classList.add('print-paper-' + selected.toLowerCase());
+        const copies = repeat ? 3 : 1;
+        if (selected === 'A6') {
+            printArea.innerHTML = Array.from({ length: copies }, () => renderReceiptHTML(data)).join('');
+        } else {
+            printArea.innerHTML = Array.from({ length: copies }, () => renderReceiptHTML(data)).join('');
+            if (selected === 'A5') printArea.querySelector('.receipt-template')?.insertAdjacentHTML('beforeend', '<div class="receipt-cut-mark">✂ فاصل قص</div>');
+        }
+        saveData();
+
+        if (showReceiptBarcode) {
+            printArea.querySelectorAll('svg').forEach(svg => {
+                try {
+                    JsBarcode(svg, data.seq || "000000", { format: "CODE128", height: 30, displayValue: true, fontSize: 11 });
+                } catch (e) {}
+            });
+        }
+
+        setTimeout(() => {
+            window.print();
+        }, 500);
+    }
+
+    window.addEventListener('afterprint', () => {
+        const printArea = document.getElementById('printArea');
+        if (printArea) { printArea.className = 'hidden'; printArea.innerHTML = ''; }
+        document.documentElement.classList.remove('print-paper-a4', 'print-paper-a5');
+        if (printCompletion) { const done = printCompletion; printCompletion = null; done(); }
+        pendingReceiptData = null;
+    });
+
+    function installmentStatus(item) {
+        if (item.remaining <= 0) return { text: 'مسدد بالكامل', cls: 'bg-green-100 text-green-700' };
+        const now = new Date();
+        const started = new Date((item.date || new Date().toISOString().slice(0,10)) + 'T00:00:00');
+        const calendarMonths = (now.getFullYear() - started.getFullYear()) * 12 + now.getMonth() - started.getMonth();
+        const dueMonths = Math.max(0, calendarMonths - (now.getDate() < started.getDate() ? 1 : 0));
+        const monthly = Number(item.monthly) || Number(item.remaining);
+        const currentMonthKey=`${now.getFullYear()}-${String(now.getMonth()+1).padStart(2,'0')}`;
+        const paidThisMonth=paymentHistory.some(payment=>payment.debtorId===item.id&&String(payment.date||'').slice(0,7)===currentMonthKey);
+        if(paidThisMonth || (item.lastPaymentDate && String(item.lastPaymentDate).slice(0,7)===currentMonthKey)) return { text:'مسدد هذا الشهر', cls:'bg-green-100 text-green-700' };
+        const paidAfterStart = paymentHistory.filter(payment => payment.debtorId === item.id && String(payment.date || '') >= String(item.date || '')).reduce((sum,payment) => sum + Number(payment.amount || 0),0);
+        const paidTotal = Math.max(Number(item.paid) || 0, paidAfterStart);
+        const installmentCount = Math.ceil(Math.max(0, (Number(item.total) || 0) - Number(item.downPayment || 0)) / monthly);
+        const installmentsDue = Math.min(installmentCount, dueMonths + (dueMonths > 0 ? 1 : 0));
+        const expected = Math.min(Number(item.total) || 0, Number(item.downPayment || 0) + installmentsDue * monthly);
+        const unpaidCycles = monthly > 0 ? Math.max(0, Math.ceil((expected - paidTotal) / monthly)) : 0;
+        if (!unpaidCycles) return { text: 'مسدد هذا الشهر', cls: 'bg-green-100 text-green-700' };
+        if (unpaidCycles === 1) return { text: 'غير مسدد هذا الشهر', cls: 'bg-yellow-100 text-yellow-800' };
+        return { text: `متأخر ${Math.min(unpaidCycles, dueMonths)} شهر`, cls: 'bg-red-100 text-red-700' };
+    }
+
+    function showAccountStatement(category, id) {
+        const item = (category === 'phones' ? phonesDebts : devicesDebts).find(x => x.id === id);
+        if (!item) return;
+        const customerId=item.customerId||item.id;
+        const accountItems=[...phonesDebts,...devicesDebts].filter(entry=>(entry.customerId||entry.id)===customerId);
+        const history = accountItems.flatMap(entry=>[...(Number(entry.paid)>0?[{date:entry.date,amount:Number(entry.paid),label:'مقدمة',notes:entry.notes,transaction:entry.device}]:[]),...paymentHistory.filter(payment=>payment.debtorId===entry.id).map(payment=>({...payment,transaction:entry.device}))]).sort((a,b)=>String(a.date).localeCompare(String(b.date)));
+        const totals=accountItems.reduce((sum,entry)=>({total:sum.total+Number(entry.total||0),paid:sum.paid+Number(entry.paid||0),remaining:sum.remaining+Number(entry.remaining||0)}),{total:0,paid:0,remaining:0});
+        let runningBalance=0;
+        const transactions=accountItems.flatMap(entry=>[
+            {date:entry.date,type:`دين: ${entry.device}`,paid:0,debt:Number(entry.total||0),notes:entry.notes||'—',id:entry.id},
+            ...(Number(entry.downPayment||0)>0?[{date:entry.date,type:`مقدمة: ${entry.device}`,paid:Number(entry.downPayment),debt:0,notes:entry.notes||'—',id:`down_${entry.id}`}]:[]),
+            ...paymentHistory.filter(payment=>payment.debtorId===entry.id).map(payment=>({date:payment.date,type:`تسديد: ${entry.device}`,paid:Number(payment.amount||0),debt:0,notes:payment.notes||'—',id:payment.id}))
+        ]).sort((a,b)=>String(a.date||'').localeCompare(String(b.date||'')));
+        const rows=transactions.map(tx=>{runningBalance=Math.max(0,runningBalance+tx.debt-tx.paid);return `<tr class="border-b"><td class="p-2">${escapeHTML(tx.date||'')}</td><td class="p-2">${escapeHTML(tx.type)}</td><td class="p-2 text-green-700">${formatNumber(tx.paid)}</td><td class="p-2 ${tx.debt?'text-red-600':''}">${formatNumber(tx.debt||runningBalance)}</td><td class="p-2">${escapeHTML(tx.notes)}</td></tr>`;}).join('');
+        document.getElementById('accountStatementContent').innerHTML = `<div class="border rounded-xl p-3 mb-3"><strong>${escapeHTML(item.name)}</strong> | السجل: ${escapeHTML((ledgers.find(x=>x.id===(item.ledgerId||'main'))||{name:'السجل الأول'}).name)} | رقم: ${escapeHTML(item.seq)}<p class="text-sm mt-2">الهاتف: ${escapeHTML(item.phone || 'غير مدخل')}<br>مجموع الدين: ${formatNumber(totals.total)} د.ع | مجموع التسديد: ${formatNumber(totals.paid)} د.ع | المجموع المتبقي: <b class="text-red-600">${formatNumber(totals.remaining)} د.ع</b></p></div><div class="overflow-x-auto"><table class="w-full text-sm border text-center"><thead class="bg-slate-100"><tr><th class="p-2">التاريخ</th><th class="p-2">نوع المعاملة</th><th class="p-2">التسديد</th><th class="p-2">الدين / المتبقي</th><th class="p-2">ملاحظات</th></tr></thead><tbody>${rows}</tbody></table></div>`;
+        document.getElementById('printAccountStatementBtn').onclick = () => { document.getElementById('accountStatementModal').classList.add('hidden'); printReceipt({ title:'كشف حساب كامل للزبون', ...item, total:totals.total, paid:totals.paid, remaining:totals.remaining, history }); };
+        document.getElementById('accountStatementModal').classList.remove('hidden');
+    }
+
+    function addDebtPrompt(category) {
+        addDebtCustomerId=null;
+        addDebtCategory=category;
+        document.getElementById('newDebtCategory').value=category;
+        document.getElementById('newDebtLedger').value=category==='phones'?document.getElementById('phoneLedgerSelect').value:document.getElementById('deviceLedgerSelect').value;
+        ['newDebtName','newDebtPhone','newDebtDevice','newDebtTotal','newDebtDown','newDebtMonthly','newDebtNotes'].forEach(id=>document.getElementById(id).value='');
+        updateGeneratedSequences(); setDefaultDebtDates();
+        document.getElementById('addDebtModal').classList.remove('hidden');
+    }
+
+    function saveNewDebt() {
+        const category=document.getElementById('newDebtCategory').value, ledgerId=document.getElementById('newDebtLedger').value;
+        const name=document.getElementById('newDebtName').value.trim(), seq=document.getElementById('newDebtSeq').value, phone=document.getElementById('newDebtPhone').value.trim(), device=document.getElementById('newDebtDevice').value.trim();
+        const total=parseNumber(document.getElementById('newDebtTotal').value), paid=parseNumber(document.getElementById('newDebtDown').value), monthly=parseNumber(document.getElementById('newDebtMonthly').value);
+        if(!name||!device||total<=0){alert('أدخل اسم الزبون والجهاز وقيمة الدين.');return;}
+        const existingCustomer=addDebtCustomerId?((category==='phones'?phonesDebts:devicesDebts).find(item=>item.id===addDebtCustomerId)):null;
+        if(!existingCustomer&&sequenceExists(category,seq,ledgerId)){updateGeneratedSequences();alert('رقم السجل مستخدم، تم تحديث الرقم التالي تلقائياً.');return;}
+        if(!existingCustomer) phoneDuplicateWarning(phone);
+        const item={id:generateUUID(),customerId:existingCustomer?.customerId||existingCustomer?.id||generateUUID(),ledgerId,seq,name,phone,device,total,paid,downPayment:paid,remaining:Math.max(0,total-paid),monthly,date:document.getElementById('newDebtDate').value||new Date().toISOString().slice(0,10),notes:document.getElementById('newDebtNotes').value.trim(),parentDebtorId:existingCustomer?.id||null};
+        (category==='phones'?phonesDebts:devicesDebts).push(item); saveData(); renderPhonesList(); renderDevicesList(); updateStats(); renderLedgerManagement();
+        sendTelegramNotice(`تسجيل دين جديد للزبون ${item.name}: ${formatNumber(total)} د.ع`);
+        document.getElementById('addDebtModal').classList.add('hidden');
+        addDebtCustomerId=null;
+        ['newDebtName','newDebtPhone','newDebtDevice','newDebtTotal','newDebtDown','newDebtMonthly','newDebtNotes'].forEach(id=>document.getElementById(id).value='');
+        updateGeneratedSequences();
+    }
+
+    function addDebtToExisting(category, id) {
+        const item = (category === 'phones' ? phonesDebts : devicesDebts).find(x => x.id === id);
+        if (!item) return;
+        addDebtCustomerId=id;
+        addDebtCategory=category;
+        document.getElementById('newDebtCategory').value=category;
+        document.getElementById('newDebtLedger').value=item.ledgerId||'main';
+        document.getElementById('newDebtName').value=item.name;
+        document.getElementById('newDebtPhone').value=item.phone||'';
+        ['newDebtDevice','newDebtTotal','newDebtDown','newDebtMonthly'].forEach(field=>document.getElementById(field).value='');
+        document.getElementById('newDebtNotes').value='دين إضافي';
+        updateGeneratedSequences(); setDefaultDebtDates();
+        document.getElementById('addDebtModal').classList.remove('hidden');
+        document.getElementById('newDebtDevice').focus();
+    }
+
+    function addDebtToCustomerByPrompt(product, total, paid, monthly, customer) {
+        const category = product.category === 'موبايلات' ? 'phones' : 'devices';
+        const list = category === 'phones' ? phonesDebts : devicesDebts;
+        const ledgerId=customer.ledgerId||'main';
+        const customerId=customer.customerId||customer.id||generateUUID();
+        const debt = { id: generateUUID(), customerId, ledgerId, seq:customer.seq||nextLedgerSequence(category,ledgerId), name: customer.name, phone: customer.phone || '', device: `${product.name} (${product.type || ''})`, total, monthly, paid, downPayment:paid, remaining: Math.max(0,total-paid), date: new Date().toISOString().slice(0,10) };
+        list.push(debt); product.quantity -= 1;
+        saveData(); renderInventoryTable(); renderPOSProducts(); renderPhonesList(); renderDevicesList(); updateStats(); updateGeneratedSequences(); renderLedgerManagement();
+        sendTelegramNotice(`تسجيل دين للزبون ${customer.name}، ${debt.device}، المتبقي ${formatNumber(debt.remaining)} د.ع`);
+        printReceipt({ title:'وصل بيع دين / تقسيط', ...debt });
+    }
+
+    async function sendTelegramNotice(message, recipientIds = null) {
+        if (!telegramSettings.enabled || !telegramSettings.telegramBotToken) return;
+        const ids = recipientIds || [telegramSettings.telegramOwnerId, telegramSettings.telegramOwner2Id].filter(Boolean);
+        for (const chat_id of ids) {
+            try { await fetch(`https://api.telegram.org/bot${encodeURIComponent(telegramSettings.telegramBotToken)}/sendMessage`, { method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify({chat_id, text:message}) }); }
+            catch (error) {
+                console.warn('Telegram notification could not be sent.');
+                const developerId = telegramSettings.telegramDeveloperId;
+                if (developerId && !recipientIds) { try { await fetch(`https://api.telegram.org/bot${encodeURIComponent(telegramSettings.telegramBotToken)}/sendMessage`, { method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify({chat_id:developerId, text:`تعذر إرسال إشعار من النظام: ${message}`}) }); } catch (_) {} }
+            }
+        }
+    }
+
+    function printNamesList(category) {
+        const people = (category === 'phones' ? phonesDebts : devicesDebts).filter(item => item.remaining > 0);
+        const printArea = document.getElementById('listPrintArea');
+        const headings='<div class="list-print-item list-print-heading"><strong>التسلسل</strong><strong>اسم الزبون</strong><strong>مبلغ التسديد</strong></div>';
+        const leftRows=Array.from({length:25},(_,index)=>{const item=people[index];return `<div class="list-print-item"><span>${escapeHTML(item?.seq||String(index+1))}</span><strong>${escapeHTML(item?.name||'')}</strong><span>__________</span></div>`;}).join('');
+        const rightRows=Array.from({length:25},(_,index)=>{const item=people[index+25];return `<div class="list-print-item"><span>${escapeHTML(item?.seq||String(index+26))}</span><strong>${escapeHTML(item?.name||'')}</strong><span>__________</span></div>`;}).join('');
+        printArea.innerHTML = `<h2 style="text-align:center">قائمة الزبائن - ${category === 'phones' ? 'الموبايلات' : 'الأجهزة'}</h2><div class="list-print-grid"><section class="list-print-column">${headings}${leftRows}</section><section class="list-print-column">${headings}${rightRows}</section></div>`;
+        document.documentElement.classList.add('print-paper-a4'); document.body.classList.add('printing-list');
+        window.addEventListener('afterprint', function cleanupNamesPrint() { document.body.classList.remove('printing-list'); document.documentElement.classList.remove('print-paper-a4'); printArea.innerHTML = ''; }, {once:true});
+        requestAnimationFrame(() => requestAnimationFrame(() => window.print()));
+    }
+
+    function printList(category, query, filterStatus) {
+        const source = category === 'phones' ? phonesDebts : devicesDebts;
+        const q = (query || '').trim().toLowerCase();
+        const selected = source.filter(item => {
+            const match = !q || String(item.name || '').toLowerCase().includes(q) || String(item.seq || '').toLowerCase().includes(q);
+            const status = filterStatus === 'paid' ? item.remaining <= 0 : filterStatus === 'unpaid' ? item.remaining > 0 : true;
+            return match && status;
+        });
+        const area = document.getElementById('listPrintArea');
+        area.innerHTML = `<h2 style="text-align:center">قائمة ${category === 'phones' ? 'الموبايلات' : 'الأجهزة الكهربائية'}</h2><div class="list-print-grid">${selected.map(item => `<div class="list-print-item"><span>${escapeHTML(item.seq)}</span><strong>${escapeHTML(item.name)}</strong><span>__________</span></div>`).join('')}</div>`;
+        document.documentElement.classList.add('print-paper-a4'); document.body.classList.add('printing-list');
+        window.addEventListener('afterprint', function cleanupListPrint() { document.body.classList.remove('printing-list'); document.documentElement.classList.remove('print-paper-a4'); area.innerHTML = ''; }, {once:true});
+        requestAnimationFrame(() => requestAnimationFrame(() => window.print()));
+    }
+
+    function saveReceiptProfile() {
+        const size = selectedPaperSize || 'A5';
+        receiptProfiles[`default_${size}`] = { style:selectedStyle, elements:JSON.parse(JSON.stringify(savedDesignElements)) };
+        localStorage.setItem('walid_receipt_profiles', JSON.stringify(receiptProfiles));
+        selectedPaperSize = size; saveData(); alert('تم حفظ تصميم الوصل لهذا المقاس.');
+    }
+
+    function renderDesignerCanvas() {
+        const canvas = document.getElementById('a5Canvas');
+        if (!canvas) return;
+        
+        canvas.innerHTML = renderReceiptHTML({
+            title: "وصل تجريبي - معاينة التصميم",
+            seq: "00123",
+            name: "زبون تجريبي للتصميم",
+            phone: "07800000000",
+            device: "جهاز تجريبي A5/A4/A6",
+            total: 1000000,
+            paid: 200000,
+            remaining: 800000,
+            monthly: 100000
+        });
+
+        savedDesignElements.forEach((el, index) => {
+            const div = document.createElement('div');
+            div.className = 'designer-element active';
+            div.style.left = el.left + '%';
+            div.style.top = el.top + '%';
+            div.innerText = el.text;
+            div.dataset.index = index;
+
+            div.onmousedown = function(e) {
+                let rect = canvas.getBoundingClientRect();
+
+                document.onmousemove = function(eMove) {
+                    let newLeft = ((eMove.clientX - rect.left) / rect.width) * 100;
+                    let newTop = ((eMove.clientY - rect.top) / rect.height) * 100;
+
+                    newLeft = Math.max(0, Math.min(90, newLeft));
+                    newTop = Math.max(0, Math.min(90, newTop));
+
+                    div.style.left = newLeft + '%';
+                    div.style.top = newTop + '%';
+
+                    savedDesignElements[index].left = Math.round(newLeft);
+                    savedDesignElements[index].top = Math.round(newTop);
+                };
+
+                document.onmouseup = function() {
+                    document.onmousemove = null;
+                    document.onmouseup = null;
+                    saveData();
+                };
+            };
+
+            canvas.appendChild(div);
+        });
+    }
+
+    function addDesignerText() {
+        const txt = prompt("أدخل النص المراد إضافته على الوصل:");
+        if (txt && txt.trim()) {
+            savedDesignElements.push({
+                text: txt.trim(),
+                left: 10,
+                top: 10,
+                fontSize: 14,
+                fontWeight: 'bold'
+            });
+            saveData();
+            renderDesignerCanvas();
+        }
+    }
+
+    function calculateInstallments(totalId, downId, monthlyId, targetId) {
+        const total = parseNumber(document.getElementById(totalId).value);
+        const down = parseNumber(document.getElementById(downId).value);
+        const monthly = parseNumber(document.getElementById(monthlyId).value);
+
+        if (total > 0 && monthly > 0 && (total - down) > 0) {
+            const months = Math.ceil((total - down) / monthly);
+            document.getElementById(targetId).value = months;
+        } else {
+            document.getElementById(targetId).value = '';
+        }
+    }
+
+    function renderPhonesList(filterQuery = '', filterStatus = 'all') {
+        const container = document.getElementById('phonesDebtorsList');
+        if (!container) return;
+        
+        let list = phonesDebts.filter(item => {
+            const q = filterQuery.toLowerCase();
+            const matchesQuery = item.name.toLowerCase().includes(q) || item.seq.toLowerCase().includes(q) || (item.phone && item.phone.includes(q));
+            let matchesStatus = true;
+            if (filterStatus === 'paid') matchesStatus = item.remaining <= 0;
+            if (filterStatus === 'unpaid') matchesStatus = item.remaining > 0;
+            if (filterStatus === 'late') matchesStatus = installmentStatus(item).text.startsWith('متأخر');
+            return matchesQuery && matchesStatus;
+        });
+
+        if (list.length === 0) {
+            container.innerHTML = `<p class="text-center text-gray-500 py-4 font-bold">لا توجد سجلات زبائن تنطبق عليها الشروط</p>`;
+            return;
+        }
+
+        container.innerHTML = list.map(item => { const status = installmentStatus(item); return `
+            <div class="border rounded-xl p-4 bg-gray-50 flex justify-between items-center flex-wrap gap-2">
+                <div>
+                    <h4 class="font-bold text-blue-900 text-base">${escapeHTML(item.name)} <span class="text-xs bg-blue-100 text-blue-800 px-2 py-0.5 rounded-full font-mono">${escapeHTML(item.seq)}</span></h4>
+                    <p class="text-xs text-gray-600 mt-1">الجهاز: <strong>${escapeHTML(item.device)}</strong> | الهاتف: ${escapeHTML(item.phone || 'غير مدخل')} | التاريخ: ${escapeHTML(item.date)}</p>
+                    <p class="text-xs text-gray-600 mt-0.5">المبلغ الكلي: ${formatNumber(item.total)} د.ع | المدفوع: ${formatNumber(item.paid)} د.ع | المتبقي: <span class="${item.remaining > 0 ? 'text-red-600 font-bold' : 'text-green-600 font-bold'}">${formatNumber(item.remaining)} د.ع</span></p>
+                    <span class="inline-block mt-1 text-xs font-bold px-2 py-1 rounded ${status.cls}">${status.text}</span>
+                </div>
+                <div class="flex items-center gap-2">
+                    <button onclick="showAccountStatement('phones', '${item.id}')" class="btn-primary text-xs px-2.5 py-1.5 rounded-lg" title="كشف حساب وسجل التسديد"><i class="fas fa-folder-open"></i> السجل</button>
+                    <button onclick="addDebtToExisting('phones', '${item.id}')" class="btn-purple text-xs px-2.5 py-1.5 rounded-lg"><i class="fas fa-plus"></i> إضافة دين</button>
+                    ${item.remaining > 0 ? `<button onclick="openPaymentModal('phones', '${item.id}')" class="btn-success text-xs px-3 py-1.5 rounded-lg"><i class="fas fa-hand-holding-usd"></i> تسديد قسط</button>` : `<span class="text-xs font-bold text-green-600 bg-green-100 px-2 py-1 rounded-lg">خالص الدين</span>`}
+                    <button onclick="printReceipt({title:'وصل كشف حساب زبون', seq:'${item.seq}', name:'${escapeHTML(item.name)}', phone:'${escapeHTML(item.phone)}', device:'${escapeHTML(item.device)}', total:${item.total}, paid:${item.paid}, remaining:${item.remaining}, monthly:${item.monthly}})" class="btn-primary text-xs px-2.5 py-1.5 rounded-lg"><i class="fas fa-print"></i></button>
+                    <button onclick="deleteDebtor('phones', '${item.id}')" class="btn-danger text-xs px-2 py-1.5 rounded-lg"><i class="fas fa-trash"></i></button>
+                </div>
+            </div>
+        `; }).join('');
+    }
+
+    function renderDevicesList(filterQuery = '', filterStatus = 'all') {
+        const container = document.getElementById('devicesDebtorsList');
+        if (!container) return;
+
+        let list = devicesDebts.filter(item => {
+            const q = filterQuery.toLowerCase();
+            const matchesQuery = item.name.toLowerCase().includes(q) || item.seq.toLowerCase().includes(q) || (item.phone && item.phone.includes(q));
+            let matchesStatus = true;
+            if (filterStatus === 'paid') matchesStatus = item.remaining <= 0;
+            if (filterStatus === 'unpaid') matchesStatus = item.remaining > 0;
+            if (filterStatus === 'late') matchesStatus = installmentStatus(item).text.startsWith('متأخر');
+            return matchesQuery && matchesStatus;
+        });
+
+        if (list.length === 0) {
+            container.innerHTML = `<p class="text-center text-gray-500 py-4 font-bold">لا توجد سجلات للأجهزة الكهربائية تنطبق عليها الشروط</p>`;
+            return;
+        }
+
+        container.innerHTML = list.map(item => { const status = installmentStatus(item); return `
+            <div class="border rounded-xl p-4 bg-gray-50 flex justify-between items-center flex-wrap gap-2">
+                <div>
+                    <h4 class="font-bold text-blue-900 text-base">${escapeHTML(item.name)} <span class="text-xs bg-blue-100 text-blue-800 px-2 py-0.5 rounded-full font-mono">${escapeHTML(item.seq)}</span></h4>
+                    <p class="text-xs text-gray-600 mt-1">الجهاز: <strong>${escapeHTML(item.device)}</strong> | الهاتف: ${escapeHTML(item.phone || 'غير مدخل')} | التاريخ: ${escapeHTML(item.date)}</p>
+                    <p class="text-xs text-gray-600 mt-0.5">المبلغ الكلي: ${formatNumber(item.total)} د.ع | المدفوع: ${formatNumber(item.paid)} د.ع | المتبقي: <span class="${item.remaining > 0 ? 'text-red-600 font-bold' : 'text-green-600 font-bold'}">${formatNumber(item.remaining)} د.ع</span></p>
+                    <span class="inline-block mt-1 text-xs font-bold px-2 py-1 rounded ${status.cls}">${status.text}</span>
+                </div>
+                <div class="flex items-center gap-2">
+                    <button onclick="showAccountStatement('devices', '${item.id}')" class="btn-primary text-xs px-2.5 py-1.5 rounded-lg" title="كشف حساب وسجل التسديد"><i class="fas fa-folder-open"></i> السجل</button>
+                    <button onclick="addDebtToExisting('devices', '${item.id}')" class="btn-purple text-xs px-2.5 py-1.5 rounded-lg"><i class="fas fa-plus"></i> إضافة دين</button>
+                    ${item.remaining > 0 ? `<button onclick="openPaymentModal('devices', '${item.id}')" class="btn-success text-xs px-3 py-1.5 rounded-lg"><i class="fas fa-hand-holding-usd"></i> تسديد قسط</button>` : `<span class="text-xs font-bold text-green-600 bg-green-100 px-2 py-1 rounded-lg">خالص الدين</span>`}
+                    <button onclick="printReceipt({title:'وصل كشف حساب زبون', seq:'${item.seq}', name:'${escapeHTML(item.name)}', phone:'${escapeHTML(item.phone)}', device:'${escapeHTML(item.device)}', total:${item.total}, paid:${item.paid}, remaining:${item.remaining}, monthly:${item.monthly}})" class="btn-primary text-xs px-2.5 py-1.5 rounded-lg"><i class="fas fa-print"></i></button>
+                    <button onclick="deleteDebtor('devices', '${item.id}')" class="btn-danger text-xs px-2 py-1.5 rounded-lg"><i class="fas fa-trash"></i></button>
+                </div>
+            </div>
+        `; }).join('');
+    }
+
+    function renderInventoryTable() {
+        const tbody = document.getElementById('inventoryTableBody');
+        if (!tbody) return;
+        if (inventory.length === 0) {
+            tbody.innerHTML = `<tr><td colspan="9" class="p-4 text-center text-gray-500 font-bold">لا توجد مواد بالمخزن حالياً</td></tr>`;
+            return;
+        }
+        tbody.innerHTML = inventory.map(item => `
+            <tr class="border-b hover:bg-slate-50">
+                <td class="p-2">${item.image ? `<img src="${escapeHTML(item.image)}" alt="${escapeHTML(item.name)}" class="w-12 h-12 object-cover mx-auto rounded">` : '—'}</td>
+                <td class="p-2 font-mono text-xs text-gray-500">${escapeHTML(item.code || 'PRD-' + item.id.substring(0,4))}</td>
+                <td class="p-2 font-bold">${escapeHTML(item.name)}</td>
+                <td class="p-2">${escapeHTML(item.category)}</td>
+                <td class="p-2">${escapeHTML(item.type || '---')}</td>
+                <td class="p-2 font-bold text-blue-700">${item.quantity}</td>
+                <td class="p-2 text-green-700 font-bold">${formatNumber(item.cashPrice)} د.ع</td>
+                <td class="p-2 text-purple-700 font-bold">${formatNumber(item.installmentPrice)} د.ع</td>
+                <td class="p-2">
+                    <button onclick="editInventoryItem('${item.id}')" class="btn-primary card-btn"><i class="fas fa-edit"></i> تعديل</button>
+                    <button onclick="deleteInventoryItem('${item.id}')" class="btn-danger card-btn"><i class="fas fa-trash"></i> مسح</button>
+                </td>
+            </tr>
+        `).join('');
+    }
+
+    function renderPOSProducts() {
+        const grid = document.getElementById('posProductsGrid');
+        if (!grid) return;
+        if (inventory.length === 0) {
+            grid.innerHTML = `<p class="col-span-full text-center text-gray-500 py-6 font-bold">المخزن فارغ، يرجى إضافة مواد في تبويب المخزن</p>`;
+            return;
+        }
+
+        grid.innerHTML = inventory.map(item => `
+            <div class="border rounded-2xl p-4 bg-slate-50 flex flex-col justify-between hover:shadow-md transition-all">
+                <div>
+                    <span class="text-xs font-bold text-blue-600 bg-blue-100 px-2 py-0.5 rounded-full">${escapeHTML(item.category)}</span>
+                    <h4 class="font-black text-gray-800 text-base mt-2">${escapeHTML(item.name)}</h4>
+                    <p class="text-xs text-gray-500">${escapeHTML(item.type || '')}</p>
+                    <p class="text-xs font-bold text-gray-700 mt-1">الكمية: ${item.quantity}</p>
+                </div>
+                <div class="mt-4 pt-2 border-t">
+                    <div class="text-sm font-black text-green-700 mb-2">${formatNumber(item.cashPrice)} د.ع</div>
+                    <button onclick="sellCashPOS('${item.id}')" class="w-full btn-success text-xs py-2 rounded-xl"><i class="fas fa-shopping-cart"></i> بيع نقدي</button>
+                    <button onclick="sellDebtPOS('${item.id}')" class="w-full btn-primary text-xs py-2 rounded-xl mt-2"><i class="fas fa-file-invoice-dollar"></i> بيع دين / تقسيط</button>
+                </div>
+            </div>
+        `).join('');
+    }
+
+    function sellCashPOS(productId) {
+        const prod = inventory.find(p => p.id === productId);
+        if (!prod || prod.quantity <= 0) {
+            alert("المادة غير متوفرة في المخزن!");
+            return;
+        }
+
+        const custName = prompt("أدخل اسم الزبون للمبيعات النقدية:", "زبون مباشر");
+        if (custName === null) return;
+        const custPhone = prompt('رقم هاتف الزبون (اختياري):','') || '';
+        const warranty = prompt('أدخل حالة/مدة الضمان (مثال: سنة أو بدون ضمان):', 'سنة');
+        if (warranty === null) return;
+        
+        prod.quantity -= 1;
+        
+        const warrantyRecord = {
+            id: generateUUID(),
+            seq: "POS-" + Math.floor(1000 + Math.random() * 9000),
+            name: custName,
+            phone: custPhone,
+            device: prod.name + " (" + (prod.type || '') + ")",
+            amount: prod.cashPrice,
+            warranty,
+            date: new Date().toLocaleDateString('ar-IQ')
+        };
+
+        activeWarranties.unshift(warrantyRecord);
+        saveData();
+        renderInventoryTable();
+        renderPOSProducts();
+        renderActiveWarranties();
+        updateStats();
+
+        printReceipt({
+            title: "وصل بيع نقد مباشر",
+            seq: warrantyRecord.seq,
+            name: warrantyRecord.name,
+            phone: warrantyRecord.phone,
+            device: warrantyRecord.device,
+            total: prod.cashPrice,
+            paid: prod.cashPrice,
+            remaining: 0
+        });
+    }
+
+    function sellDebtPOS(productId) {
+        const prod = inventory.find(p => p.id === productId);
+        if (!prod || prod.quantity <= 0) { alert('المادة غير متوفرة في المخزن!'); return; }
+        const choice = prompt('اكتب 1 لاختيار زبون موجود أو 2 لتسجيل زبون جديد:', '1');
+        if (choice === null) return;
+        let customer;
+        if (choice.trim() === '1') {
+            const query = prompt('ابحث برقم السجل أو اسم الزبون:'); if (!query) return;
+            const allCustomers = [...phonesDebts.map(x => ({...x, category:'phones'})), ...devicesDebts.map(x => ({...x, category:'devices'}))];
+            const matches = allCustomers.filter(item => item.name.toLowerCase().includes(query.toLowerCase()) || String(item.seq).toLowerCase().includes(query.toLowerCase()));
+            if (!matches.length) { alert('لم يتم العثور على الزبون.'); return; }
+            const labels = matches.map((item,index) => `${index + 1}. ${item.name} - ${item.seq} - متبقي ${formatNumber(item.remaining)}`).join('\n');
+            const selectedIndex = parseInt(prompt(`${labels}\nاكتب رقم الخيار:`, '1'),10)-1;
+            if (!matches[selectedIndex]) return;
+            customer = matches[selectedIndex];
+        } else if (choice.trim() === '2') {
+            const name = prompt('اسم الزبون الكامل:'); if (!name || !name.trim()) return;
+            const ledgerNames=ledgers.map((ledger,index)=>`${index+1}. ${ledger.name}`).join('\n');
+            const ledgerIndex=parseInt(prompt(`اختر سجل الزبون:\n${ledgerNames}`,'1'),10)-1;
+            if(!ledgers[ledgerIndex])return;
+            const phone=prompt('رقم الهاتف (اختياري):','') || '';
+            phoneDuplicateWarning(phone);
+            customer = { name:name.trim(), ledgerId:ledgers[ledgerIndex].id, phone };
+        } else return;
+        const suggestedPrice=prod.installmentPrice||prod.cashPrice;
+        const enteredPrice=prompt(`سعر البيع بالتقسيط (يمكن تعديله): ${formatNumber(suggestedPrice)} د.ع`,String(suggestedPrice));
+        const total=parseNumber(enteredPrice||'0');
+        if (total <= 0) { alert('أدخل سعراً صحيحاً.'); return; }
+        const paid = parseNumber(prompt('الدفعة الأولى (يمكن كتابة 0):', '0') || '0');
+        const monthly = parseNumber(prompt('القسط الشهري:', '0') || '0');
+        addDebtToCustomerByPrompt(prod,total,paid,monthly,customer);
+    }
+
+    function renderActiveWarranties() {
+        const container = document.getElementById('activeWarrantiesList');
+        if (!container) return;
+        if (activeWarranties.length === 0) {
+            container.innerHTML = `<p class="text-center text-gray-500 py-4 font-bold text-xs">لا توجد مبيعات نقدية سابقة</p>`;
+            return;
+        }
+
+        container.innerHTML = activeWarranties.map(item => `
+            <div class="border rounded-xl p-3 bg-green-50 border-green-200">
+                <div class="flex justify-between items-center">
+                    <h5 class="font-bold text-xs text-green-900">${escapeHTML(item.name)}</h5>
+                    <span class="text-xs font-mono font-bold text-green-700">${item.seq}</span>
+                </div>
+                <p class="text-xs text-gray-600 mt-1">${escapeHTML(item.device)} - ${formatNumber(item.amount)} د.ع</p>
+                <p class="text-[10px] text-gray-400 mt-1">${item.date}</p>
+            </div>
+        `).join('');
+    }
+
+    function openPaymentModal(category, id) {
+        currentPaymentTarget = { category, id };
+        let item = (category === 'phones') ? phonesDebts.find(p => p.id === id) : devicesDebts.find(d => d.id === id);
+        if (!item) return;
+        const customerId=item.customerId||item.id;
+        const accountItems=[...phonesDebts,...devicesDebts].filter(entry=>(entry.customerId||entry.id)===customerId);
+        const totalRemaining=accountItems.reduce((sum,entry)=>sum+Number(entry.remaining||0),0);
+        document.getElementById('payCustName').innerText = item.name + " (" + item.device + ")";
+        document.getElementById('payCustTotalRem').innerText = formatNumber(totalRemaining) + " د.ع";
+        document.getElementById('payAmountInput').value = item.monthly || '';
+        document.getElementById('payDateInput').value = new Date().toISOString().split('T')[0];
+
+        document.getElementById('paymentModal').classList.remove('hidden');
+    }
+
+    function confirmPayment() {
+        if (!currentPaymentTarget) return;
+        const amount = parseNumber(document.getElementById('payAmountInput').value);
+        if (amount <= 0) {
+            alert("يرجى إدخال مبلغ تسديد صحيح!");
+            return;
+        }
+
+        const allDebts=[...phonesDebts,...devicesDebts];
+        let item = allDebts.find(x => x.id === currentPaymentTarget.id);
+
+        if (!item) return;
+
+        const customerId=item.customerId||item.id;
+        const accountItems=[...phonesDebts,...devicesDebts].filter(entry=>(entry.customerId||entry.id)===customerId).sort((a,b)=>String(a.date||'').localeCompare(String(b.date||'')));
+        const totalRemaining=accountItems.reduce((sum,entry)=>sum+Number(entry.remaining||0),0);
+        if (amount > totalRemaining) {
+            const overage=amount-totalRemaining;
+            document.getElementById('paymentOverageMessage').innerText=`المتبقي للزبون ${item.name} هو ${formatNumber(totalRemaining)} د.ع. المبلغ الزائد ${formatNumber(overage)} د.ع يُعاد للزبون ولم يُسجل كدفعة.`;
+            document.getElementById('paymentOverageModal').classList.remove('hidden');
+            return;
+        }
+        let unapplied=amount;
+        const paymentDate=document.getElementById('payDateInput').value||new Date().toISOString().split('T')[0];
+        const paymentNotes=document.getElementById('payNotesInput').value.trim();
+        accountItems.forEach(debt=>{ if(unapplied<=0)return; const applied=Math.min(unapplied,Number(debt.remaining||0)); if(applied<=0)return; debt.paid=Number(debt.paid||0)+applied; debt.remaining=Math.max(0,Number(debt.total||0)-debt.paid); debt.lastPaymentDate=paymentDate; paymentHistory.push({id:generateUUID(),debtorId:debt.id,customerId,debtorName:item.name,amount:applied,date:paymentDate,notes:paymentNotes}); unapplied-=applied; });
+        const appliedAmount=amount-unapplied;
+
+        saveData();
+        renderPhonesList();
+        renderDevicesList();
+        updateStats();
+        const remainingAfter=accountItems.reduce((sum,entry)=>sum+Number(entry.remaining||0),0);
+        sendTelegramNotice(`تسديد ${formatNumber(appliedAmount)} د.ع من الزبون ${item.name}. المتبقي ${formatNumber(remainingAfter)} د.ع`);
+
+        document.getElementById('paymentModal').classList.add('hidden');
+
+        printReceipt({
+            title: "وصل تسديد قسط",
+            seq: item.seq,
+            name: item.name,
+            phone: item.phone,
+            device: item.device,
+            total: item.total,
+            paid: appliedAmount,
+            remaining: remainingAfter,
+            history: paymentHistory.filter(payment=>payment.customerId===customerId)
+        });
+    }
+
+    function deleteDebtor(category, id) {
+        if (confirm("هل أنت تأكد من مسح هذا الزبون وسجله نهائياً؟")) {
+            if (category === 'phones') {
+                phonesDebts = phonesDebts.filter(x => x.id !== id);
+            } else {
+                devicesDebts = devicesDebts.filter(x => x.id !== id);
+            }
+            saveData();
+            renderPhonesList();
+            renderDevicesList();
+            updateStats();
+        }
+    }
+
+    function deleteInventoryItem(id) {
+        if (confirm("هل أنت تأكد من مسح هذه المادة من المخزن؟")) {
+            inventory = inventory.filter(x => x.id !== id);
+            saveData();
+            renderInventoryTable();
+            renderPOSProducts();
+        }
+    }
+
+    function editInventoryItem(id) {
+        const item = inventory.find(x => x.id === id);
+        if (!item) return;
+        const name = prompt('اسم المادة:', item.name); if (name === null) return;
+        const quantity = prompt('الكمية:', item.quantity); if (quantity === null) return;
+        const cashPrice = prompt('سعر البيع نقداً:', item.cashPrice); if (cashPrice === null) return;
+        const installmentPrice = prompt('سعر البيع بالتقسيط:', item.installmentPrice); if (installmentPrice === null) return;
+        const type = prompt('النوع / اللون / الموديل:', item.type || ''); if (type === null) return;
+        if (!name.trim() || parseInt(quantity, 10) < 0) { alert('تحقق من اسم المادة والكمية.'); return; }
+        Object.assign(item, { name: name.trim(), quantity: parseInt(quantity, 10), cashPrice: parseNumber(cashPrice), installmentPrice: parseNumber(installmentPrice), type: type.trim() });
+        saveData(); renderInventoryTable(); renderPOSProducts();
+    }
+
+    function updateStats() {
+        const allDebts = [...phonesDebts, ...devicesDebts];
+        
+        let totalSales = allDebts.reduce((acc, curr) => acc + curr.total, 0);
+        let totalPaid = allDebts.reduce((acc, curr) => acc + curr.paid, 0);
+        let totalRemaining = allDebts.reduce((acc, curr) => acc + curr.remaining, 0);
+
+        let paidCount = allDebts.filter(x => x.remaining <= 0).length;
+        let unpaidCount = allDebts.filter(x => x.remaining > 0).length;
+
+        document.getElementById('statTotalSales').innerText = formatNumber(totalSales) + " د.ع";
+        document.getElementById('statTotalPaid').innerText = formatNumber(totalPaid) + " د.ع";
+        document.getElementById('statTotalRemaining').innerText = formatNumber(totalRemaining) + " د.ع";
+        document.getElementById('statPaidCount').innerText = paidCount;
+        document.getElementById('statUnpaidCount').innerText = unpaidCount;
+        document.getElementById('statCustomersCount').innerText = allDebts.length;
+
+        renderMonthlyCustomersList();
+    }
+
+    function renderMonthlyCustomersList() {
+        const container = document.getElementById('monthlyCustomersContainer');
+        if (!container) return;
+
+        const catFilter = document.getElementById('statsCategoryFilter').value;
+        const statusFilter = document.getElementById('statsStatusFilter').value;
+
+        let list = [];
+        if (catFilter === 'all' || catFilter === 'phones') {
+            list = list.concat(phonesDebts.map(x => ({ ...x, cat: 'موبايل' })));
+        }
+        if (catFilter === 'all' || catFilter === 'devices') {
+            list = list.concat(devicesDebts.map(x => ({ ...x, cat: 'أجهزة كهربائية' })));
+        }
+
+        if (statusFilter === 'paid') list = list.filter(x => x.remaining <= 0);
+        if (statusFilter === 'unpaid') list = list.filter(x => x.remaining > 0);
+
+        if (list.length === 0) {
+            container.innerHTML = `<p class="text-center text-gray-500 py-4 font-bold">لا توجد سجلات مطابقة للفلترة</p>`;
+            return;
+        }
+
+        container.innerHTML = list.map(item => `
+            <div class="border rounded-xl p-3 bg-white flex justify-between items-center text-xs">
+                <div>
+                    <strong class="text-sm text-gray-800">${escapeHTML(item.name)}</strong> (${item.cat})
+                    <p class="text-gray-500">الجهاز: ${escapeHTML(item.device)} | التسلسل: ${item.seq}</p>
+                </div>
+                <div class="text-left">
+                    <span class="font-bold block text-blue-900">الكلي: ${formatNumber(item.total)}</span>
+                    <span class="font-bold text-red-600 block">المتبقي: ${formatNumber(item.remaining)}</span>
+                </div>
+            </div>
+        `).join('');
+    }
+
+    function startScanner() {
+        const modal = document.getElementById('scannerModal');
+        const video = document.getElementById('scannerVideo');
+        const status = document.getElementById('scannerStatus');
+        modal.classList.remove('hidden');
+
+        if (navigator.mediaDevices && navigator.mediaDevices.getUserMedia) {
+            navigator.mediaDevices.getUserMedia({ video: { facingMode: "environment" } })
+                .then(stream => {
+                    scannerStream = stream;
+                    video.srcObject = stream;
+                    video.setAttribute("playsinline", true);
+                    video.play();
+                    status.innerText = "جاري مسح الباركود...";
+                    scanBarcode();
+                })
+                .catch(err => {
+                    status.innerText = "تعذر الوصول للكاميرا";
+                });
+        } else {
+            status.innerText = "المتصفح لا يدعم الكاميرا";
+        }
+    }
+
+    function scanBarcode() {
+        const video = document.getElementById('scannerVideo');
+        if (video.readyState === video.HAVE_ENOUGH_DATA) {
+            const canvas = document.createElement("canvas");
+            canvas.width = video.videoWidth;
+            canvas.height = video.videoHeight;
+            const ctx = canvas.getContext("2d");
+            ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
+            const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
+            const code = jsQR(imageData.data, imageData.width, imageData.height, {
+                inversionAttempts: "dontInvert",
+            });
+            if (code) {
+                alert("تم قراءة الرمز: " + code.data);
+                stopScanner();
+                return;
+            }
+        }
+        scannerAnimationFrame = requestAnimationFrame(scanBarcode);
+    }
+
+    function stopScanner() {
+        if (scannerAnimationFrame) {
+            cancelAnimationFrame(scannerAnimationFrame);
+            scannerAnimationFrame = null;
+        }
+        if (scannerStream) {
+            scannerStream.getTracks().forEach(track => track.stop());
+            scannerStream = null;
+        }
+        document.getElementById('scannerModal').classList.add('hidden');
+    }
+
+    document.addEventListener('DOMContentLoaded', () => {
+        loadData();
+
+        // Login System
+        document.getElementById('loginBtn').onclick = () => {
+            const input = document.getElementById('pinInput').value;
+            if (input === systemPin) {
+                document.getElementById('loginScreen').classList.add('hidden');
+            } else {
+                document.getElementById('loginError').classList.remove('hidden');
+            }
+        };
+
+        document.getElementById('lockSystemBtn').onclick = () => {
+            document.getElementById('loginScreen').classList.remove('hidden');
+        };
+
+        // Tab Switching Logic
+        document.querySelectorAll('.tab-main-btn').forEach(btn => {
+            btn.onclick = () => {
+                document.querySelectorAll('.tab-main-btn').forEach(b => b.classList.remove('active'));
+                document.querySelectorAll('.tab-content').forEach(c => c.classList.add('hidden'));
+
+                btn.classList.add('active');
+                const target = btn.dataset.tab;
+                if (target === 'phones') document.getElementById('tabPhones').classList.remove('hidden');
+                if (target === 'devices') document.getElementById('tabDevices').classList.remove('hidden');
+                if (target === 'inventory') document.getElementById('tabInventory').classList.remove('hidden');
+                if (target === 'pos') document.getElementById('tabPos').classList.remove('hidden');
+                if (target === 'stats') document.getElementById('tabStats').classList.remove('hidden');
+                if (target === 'settings') document.getElementById('tabSettings').classList.remove('hidden');
+            };
+        });
+
+        // Automatic Installments Calculation Triggers
+        ['phoneTotalAmount', 'phoneMonthly', 'phoneDownPayment'].forEach(id => {
+            document.getElementById(id).addEventListener('input', () => {
+                calculateInstallments('phoneTotalAmount', 'phoneDownPayment', 'phoneMonthly', 'phoneInstallments');
+            });
+        });
+
+        ['deviceTotalAmount', 'deviceMonthly', 'deviceDownPayment'].forEach(id => {
+            document.getElementById(id).addEventListener('input', () => {
+                calculateInstallments('deviceTotalAmount', 'deviceDownPayment', 'deviceMonthly', 'deviceInstallments');
+            });
+        });
+
+        // Save Phone Debtors
+        function savePhoneRecord(shouldPrint = false) {
+            const ledgerId = document.getElementById('phoneLedgerSelect').value;
+            const seq = nextLedgerSequence('phones', ledgerId);
+            const name = document.getElementById('phoneName').value;
+            const phone = document.getElementById('phoneCustomerPhone').value;
+            const type = document.getElementById('phoneType').value;
+            const total = parseNumber(document.getElementById('phoneTotalAmount').value);
+            const monthly = parseNumber(document.getElementById('phoneMonthly').value);
+            const down = parseNumber(document.getElementById('phoneDownPayment').value);
+
+            if (!seq || !name || !type || total <= 0) {
+                alert('يرجى ملء كافة الحقول الأساسية المطلوب إدخالها!');
+                return;
+            }
+            if (sequenceExists('phones',seq,ledgerId)) { alert('رقم السجل مستخدم؛ اختر سجلاً آخر أو أعد المحاولة.'); return; }
+            phoneDuplicateWarning(phone);
+
+            const record = {
+                id: generateUUID(),
+                seq, ledgerId, name, phone,
+                device: type,
+                total, monthly,
+                paid: down,
+                downPayment: down,
+                remaining: Math.max(0, total - down),
+                date: document.getElementById('phoneDebtDate').value || new Date().toISOString().split('T')[0]
+            };
+
+            phonesDebts.push(record);
+            saveData();
+            renderPhonesList();
+            updateStats();
+            updateGeneratedSequences();
+            sendTelegramNotice(`تسجيل دين جديد للزبون ${name}: ${formatNumber(total)} د.ع`);
+
+            alert('تم حفظ زبون الموبايل بنجاح!');
+
+            if (shouldPrint) {
+                printReceipt({
+                    title: "وصل بيع بالتقسيط (موبايل)",
+                    ...record
+                });
+            }
+        }
+
+        document.getElementById('savePrintPhoneBtn').onclick = () => savePhoneRecord(true);
+        document.getElementById('saveOnlyPhoneBtn').onclick = () => savePhoneRecord(false);
+
+        // Save Electrical Devices Debtors
+        function saveDeviceRecord(shouldPrint = false) {
+            const ledgerId = document.getElementById('deviceLedgerSelect').value;
+            const seq = nextLedgerSequence('devices', ledgerId);
+            const name = document.getElementById('deviceName').value;
+            const phone = document.getElementById('deviceCustomerPhone').value;
+            const type = document.getElementById('deviceTypeName').value;
+            const total = parseNumber(document.getElementById('deviceTotalAmount').value);
+            const monthly = parseNumber(document.getElementById('deviceMonthly').value);
+            const down = parseNumber(document.getElementById('deviceDownPayment').value);
+
+            if (!seq || !name || !type || total <= 0) {
+                alert('يرجى ملء كافة الحقول الأساسية للأجهزة الكهربائية!');
+                return;
+            }
+            if (sequenceExists('devices',seq,ledgerId)) { alert('رقم السجل مستخدم؛ اختر سجلاً آخر أو أعد المحاولة.'); return; }
+            phoneDuplicateWarning(phone);
+
+            const record = {
+                id: generateUUID(),
+                seq, ledgerId, name, phone,
+                device: type,
+                total, monthly,
+                paid: down,
+                downPayment: down,
+                remaining: Math.max(0, total - down),
+                date: document.getElementById('deviceDebtDate').value || new Date().toISOString().split('T')[0]
+            };
+
+            devicesDebts.push(record);
+            saveData();
+            renderDevicesList();
+            updateStats();
+            updateGeneratedSequences();
+            sendTelegramNotice(`تسجيل دين جديد للزبون ${name}: ${formatNumber(total)} د.ع`);
+
+            alert('تم حفظ زبون الجهاز بنجاح!');
+
+            if (shouldPrint) {
+                printReceipt({
+                    title: "وصل بيع بالتقسيط (جهاز كهربائي)",
+                    ...record
+                });
+            }
+        }
+
+        document.getElementById('savePrintDeviceBtn').onclick = () => saveDeviceRecord(true);
+        document.getElementById('saveOnlyDeviceBtn').onclick = () => saveDeviceRecord(false);
+
+        // Inventory Adding
+        document.getElementById('saveProductBtn').onclick = () => {
+            const name = document.getElementById('productName').value;
+            const category = document.getElementById('productCategory').value;
+            const type = document.getElementById('productType').value;
+            const quantity = parseInt(document.getElementById('productQuantity').value) || 0;
+            const cashPrice = parseNumber(document.getElementById('productSaleCash').value);
+            const installmentPrice = parseNumber(document.getElementById('productSaleInstallment').value);
+
+            if (!name || quantity <= 0) {
+                alert("يرجى إدخال اسم المادة والكمية المتاحة بشكل صحيح!");
+                return;
+            }
+
+            const imageFile = document.getElementById('productImage').files[0];
+            const saveProduct = (image = '') => {
+            const item = {
+                id: generateUUID(),
+                code: "PRD-" + Math.floor(1000 + Math.random() * 9000),
+                name, category, type, quantity, cashPrice, installmentPrice, image
+            };
+
+            inventory.push(item);
+            saveData();
+            renderInventoryTable();
+            renderPOSProducts();
+            renderProductOptions();
+
+            alert("تمت إضافة المادة للمخزن بنجاح!");
+            document.getElementById('productName').value = '';
+            document.getElementById('productType').value = '';
+            document.getElementById('productQuantity').value = '';
+            document.getElementById('productSaleCash').value = '';
+            document.getElementById('productSaleInstallment').value = '';
+            document.getElementById('productImage').value = '';
+            };
+            if (imageFile) {
+                const reader = new FileReader();
+                reader.onload = event => saveProduct(String(event.target.result));
+                reader.onerror = () => alert('تعذر قراءة الصورة.');
+                reader.readAsDataURL(imageFile);
+            } else saveProduct();
+        };
+
+        // Payment Modal Triggers
+        document.getElementById('closePaymentModalBtn').onclick = () => document.getElementById('paymentModal').classList.add('hidden');
+        document.getElementById('cancelPaymentBtn').onclick = () => document.getElementById('paymentModal').classList.add('hidden');
+        document.getElementById('confirmPaymentBtn').onclick = confirmPayment;
+        document.getElementById('closeAccountStatementBtn').onclick = () => document.getElementById('accountStatementModal').classList.add('hidden');
+        document.getElementById('closeAddDebtModalBtn').onclick = () => document.getElementById('addDebtModal').classList.add('hidden');
+        document.getElementById('cancelAddDebtBtn').onclick = () => document.getElementById('addDebtModal').classList.add('hidden');
+        document.getElementById('saveNewDebtBtn').onclick = saveNewDebt;
+        document.getElementById('closePaymentOverageBtn').onclick = () => { document.getElementById('paymentOverageModal').classList.add('hidden'); document.getElementById('paymentModal').classList.add('hidden'); currentPaymentTarget=null; };
+        document.getElementById('editOverageAmountBtn').onclick = () => { document.getElementById('paymentOverageModal').classList.add('hidden'); document.getElementById('payAmountInput').focus(); document.getElementById('payAmountInput').select(); };
+        document.getElementById('phoneLedgerSelect').onchange = updateGeneratedSequences;
+        document.getElementById('deviceLedgerSelect').onchange = updateGeneratedSequences;
+        document.getElementById('newDebtLedger').onchange = updateGeneratedSequences;
+        document.getElementById('newDebtCategory').onchange = updateGeneratedSequences;
+        document.getElementById('addLedgerBtn').onclick = () => { const name=document.getElementById('newLedgerName').value.trim(); if(!name)return; ledgers.push({id:generateUUID(),name}); document.getElementById('newLedgerName').value=''; renderLedgerSelectors(); renderLedgerManagement(); saveData(); };
+        const fillPhoneProductPrice = () => { const product=inventory.find(item=>(item.name+(item.type?' - '+item.type:''))===document.getElementById('phoneType').value); if(product&&product.installmentPrice)document.getElementById('phoneTotalAmount').value=product.installmentPrice; };
+        const fillDeviceProductPrice = () => { const product=inventory.find(item=>(item.name+(item.type?' - '+item.type:''))===document.getElementById('deviceTypeName').value); if(product&&product.installmentPrice)document.getElementById('deviceTotalAmount').value=product.installmentPrice; };
+        document.getElementById('phoneType').addEventListener('input',fillPhoneProductPrice);
+        document.getElementById('deviceTypeName').addEventListener('input',fillDeviceProductPrice);
+        document.querySelectorAll('[data-print-size]').forEach(button => button.onclick = () => startReceiptPrint(button.dataset.printSize, document.getElementById('repeatReceiptToggle').checked));
+        document.getElementById('cancelReceiptPrintBtn').onclick = () => { document.getElementById('receiptPrintModal').classList.add('hidden'); pendingReceiptData = null; printCompletion = null; };
+
+        // Search & Filter Listeners
+        const triggerPhoneFilter = () => {
+            renderPhonesList(document.getElementById('searchPhonesInput').value, document.getElementById('phoneStatusFilter').value);
+        };
+        document.getElementById('searchPhonesBtn').onclick = triggerPhoneFilter;
+        document.getElementById('searchPhonesInput').onkeyup = triggerPhoneFilter;
+        document.getElementById('phoneStatusFilter').onchange = triggerPhoneFilter;
+
+        const triggerDeviceFilter = () => {
+            renderDevicesList(document.getElementById('searchDevicesInput').value, document.getElementById('deviceStatusFilter').value);
+        };
+        document.getElementById('searchDevicesBtn').onclick = triggerDeviceFilter;
+        document.getElementById('searchDevicesInput').onkeyup = triggerDeviceFilter;
+        document.getElementById('deviceStatusFilter').onchange = triggerDeviceFilter;
+
+        document.getElementById('statsCategoryFilter').onchange = renderMonthlyCustomersList;
+        document.getElementById('statsStatusFilter').onchange = renderMonthlyCustomersList;
+
+        document.getElementById('exportPhonesPdfBtn').onclick = () => printList('phones', document.getElementById('searchPhonesInput').value, document.getElementById('phoneStatusFilter').value);
+        document.getElementById('exportDevicesPdfBtn').onclick = () => printList('devices', document.getElementById('searchDevicesInput').value, document.getElementById('deviceStatusFilter').value);
+        document.getElementById('printStatsBtn').onclick = () => window.print();
+        document.getElementById('printNamesListBtn').onclick = () => printNamesList(document.getElementById('statsCategoryFilter').value === 'devices' ? 'devices' : 'phones');
+
+        // Settings Listeners
+        document.getElementById('changePinBtn').onclick = () => {
+            const newPin = document.getElementById('newPinInput').value;
+            if (newPin && newPin.trim().length >= 4) {
+                systemPin = newPin.trim();
+                saveData();
+                alert("تم تغيير رمز الدخول بنجاح!");
+                document.getElementById('newPinInput').value = '';
+            } else {
+                alert("يرجى كتابة رمز يحتوي على 4 أرقام على الأقل!");
+            }
+        };
+
+        document.getElementById('backupNowBtn').onclick = () => {
+            const backup = {};
+            for (let index = 0; index < localStorage.length; index++) { const key = localStorage.key(index); if (key && key.startsWith('walid_')) backup[key] = localStorage.getItem(key); }
+            const dataStr = "data:application/json;charset=utf-8," + encodeURIComponent(JSON.stringify(backup, null, 2));
+            const downloadAnchor = document.createElement('a');
+            downloadAnchor.setAttribute("href", dataStr);
+            downloadAnchor.setAttribute("download", "walid_system_backup_" + new Date().toISOString().split('T')[0] + ".json");
+            document.body.appendChild(downloadAnchor);
+            downloadAnchor.click();
+            downloadAnchor.remove();
+        };
+        document.getElementById('backupTelegramBtn').onclick = async () => {
+            if (!telegramSettings.telegramBotToken) { alert('أدخل توكن البوت واحفظه أولاً.'); return; }
+            const chatId = prompt('أدخل ايدي تيليغرام الذي تريد إرسال النسخة إليه:', telegramSettings.telegramOwnerId || '');
+            if (!chatId) return;
+            const backup = {};
+            for (let index = 0; index < localStorage.length; index++) { const key = localStorage.key(index); if (key && key.startsWith('walid_')) backup[key] = localStorage.getItem(key); }
+            const file = new Blob([JSON.stringify(backup, null, 2)], {type:'application/json'});
+            const form = new FormData(); form.append('chat_id', chatId); form.append('document', file, `walid_backup_${new Date().toISOString().slice(0,10)}.json`);
+            try {
+                const response = await fetch(`https://api.telegram.org/bot${encodeURIComponent(telegramSettings.telegramBotToken)}/sendDocument`, {method:'POST', body:form});
+                if (!response.ok) throw new Error('Telegram rejected backup');
+                alert('تم إرسال النسخة إلى تيليغرام.');
+            } catch (error) { alert('تعذر إرسال النسخة إلى تيليغرام. تحقق من التوكن والايدي واتصال الإنترنت.'); }
+        };
+
+        document.getElementById('saveTelegramSettingsBtn').onclick = () => {
+            telegramSettings = { telegramBotToken:document.getElementById('telegramBotToken').value.trim(), telegramOwnerId:document.getElementById('telegramOwnerId').value.trim(), telegramOwner2Id:document.getElementById('telegramOwner2Id').value.trim(), telegramDeveloperId:document.getElementById('telegramDeveloperId').value.trim(), enabled:document.getElementById('telegramNotificationsEnabled').checked };
+            localStorage.setItem('walid_telegram_settings', JSON.stringify(telegramSettings)); alert('تم حفظ إعدادات تيليغرام على هذا الجهاز.');
+        };
+        document.getElementById('testTelegramBtn').onclick = async () => {
+            if (!telegramSettings.telegramBotToken) { alert('احفظ توكن البوت أولاً.'); return; }
+            const recipients = [telegramSettings.telegramOwnerId, telegramSettings.telegramOwner2Id].filter(Boolean);
+            if (!recipients.length) { alert('أدخل ايدي مالك واحد على الأقل.'); return; }
+            await sendTelegramNotice('رسالة اختبار من نظام محل وليد.', recipients); alert('تم إرسال طلب الاختبار. تحقق من تيليغرام.');
+        };
+        document.getElementById('restoreBackupBtn').onclick = () => {
+            document.getElementById('restoreFileInput').click();
+        };
+
+        document.getElementById('restoreFileInput').onchange = (e) => {
+            const file = e.target.files[0];
+            if (!file) return;
+            const reader = new FileReader();
+            reader.onload = (event) => {
+                try {
+                    const data = JSON.parse(event.target.result);
+                    Object.keys(data).forEach(key => {
+                        localStorage.setItem(key, data[key]);
+                    });
+                    loadData();
+                    alert("تمت استعادة البيانات بنجاح!");
+                } catch (err) {
+                    alert("ملف غير صالح لاستعادة البيانات!");
+                }
+            };
+            reader.readAsText(file);
+        };
+
+        document.getElementById('wipeAllDataBtn').onclick = () => {
+            if (confirm("تحذير: هل أنت متأكد تماماً من تصفير ومسح كافة البيانات من النظام؟ لا يمكن التراجع عن هذه الخطوة!")) {
+                localStorage.clear();
+                location.reload();
+            }
+        };
+
+        document.getElementById('showReceiptBarcodeToggle').onchange = (e) => {
+            showReceiptBarcode = e.target.checked;
+            saveData();
+        };
+
+        document.getElementById('autoAddZerosToggle').onchange = (e) => {
+            autoAddZeros = e.target.checked;
+            saveData();
+        };
+
+        document.getElementById('openDesignerModalBtn').onclick = () => {
+            document.getElementById('designerSizeSelect').value = selectedPaperSize;
+            document.getElementById('designerTemplateSelect').value = selectedStyle;
+            renderDesignerCanvas();
+            document.getElementById('designerModal').classList.remove('hidden');
+        };
+
+        document.getElementById('closeDesignerModalBtn').onclick = () => {
+            document.getElementById('designerModal').classList.add('hidden');
+        };
+
+        document.getElementById('addDesignerTextBtn').onclick = addDesignerText;
+
+        document.getElementById('designerSizeSelect').onchange = (e) => {
+            selectedPaperSize = e.target.value;
+            const profile = receiptProfiles[`default_${selectedPaperSize}`];
+            savedDesignElements = profile?.elements || [];
+            if (profile?.style) { selectedStyle = profile.style; document.getElementById('designerTemplateSelect').value = selectedStyle; }
+            saveData();
+            renderDesignerCanvas();
+        };
+
+        document.getElementById('designerTemplateSelect').onchange = (e) => {
+            selectedStyle = e.target.value;
+            saveData();
+            renderDesignerCanvas();
+        };
+        document.getElementById('saveReceiptDesignBtn').onclick = () => {
+            saveReceiptProfile();
+            document.getElementById('designerModal').classList.add('hidden');
+        };
+
+        setTimeout(() => {
+            const overdue = [...phonesDebts, ...devicesDebts].filter(item => installmentStatus(item).text.startsWith('متأخر'));
+            if (overdue.length) {
+                const message = `تنبيه: يوجد ${overdue.length} زبون متأخر عن تسديد القسط.`;
+                if ('Notification' in window && Notification.permission === 'granted') new Notification('تنبيه الأقساط المتأخرة', { body:message });
+                sendTelegramNotice(message);
+            }
+        }, 1500);
+
+        document.getElementById('resetReceiptDesignBtn').onclick = () => {
+            if (confirm('هل تريد إعادة تعيين العناصر المضافة للتصميم؟')) {
+                savedDesignElements = [];
+                saveData();
+                renderDesignerCanvas();
+            }
+        };
+
+        // Logo Upload
+        document.getElementById('settingsLogoInput').onchange = (e) => {
+            const file = e.target.files[0];
+            if (file) {
+                const reader = new FileReader();
+                reader.onload = (event) => {
+                    appLogoUrl = event.target.result;
+                    document.getElementById('headerLogo').src = appLogoUrl;
+                    document.getElementById('logoUploadStatus').innerText = "تم رفع اللوغو بنجاح!";
+                    saveData();
+                };
+                reader.readAsDataURL(file);
+            }
+        };
+
+        // Scanner Trigger
+        document.getElementById('specialBtn').onclick = startScanner;
+        document.getElementById('closeScannerModalBtn').onclick = stopScanner;
+
+        // Auto zero formatting
+        document.querySelectorAll('.price-input').forEach(input => {
+            input.onblur = () => {
+                const rawVal = input.value ? input.value.replace(/,/g, '').trim() : '';
+                if (autoAddZeros && rawVal && !isNaN(rawVal) && !rawVal.endsWith('000')) {
+                    input.value = rawVal + '000';
+                }
+            };
+        });
+    });
+</script>
+</body>
+</html>
